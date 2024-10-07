@@ -9,6 +9,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["all"], version = "^0.115.0"}
+pymongo = "^4.10.1"
+mongoengine = "^0.29.1"
 
 
 [build-system]

@@ -1,4 +1,4 @@
-name: semestr_job 
+name: semestr_job
 
 services:
   mongo:
@@ -12,11 +12,8 @@ services:
 
   mongo-express:
     image: mongo-express
-    env_file:
-      - .env
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongo
-      - ME_CONFIG_MONGODB_PORT=27017
       - ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_ROOT_USER}
       - ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_ROOT_PASSWORD}
       - ME_CONFIG_BASICAUTH_USERNAME=${MONGOEXPRESS_LOGIN}

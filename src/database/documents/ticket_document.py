@@ -8,7 +8,7 @@ from mongoengine import (
 )
 
 
-class Ticket(Document):
+class TicketDocument(Document):
     meta = {"db_alias": "airport", "collection": "tickets"}
     passenger = ReferenceField("passengers", required=True)
     fare_conditions = ReferenceField("seat_classes", required=True)

@@ -11,24 +11,24 @@ from mongoengine import (
 from pydantic import ValidationError
 
 
-class PassengerFlight(EmbeddedDocument):
+class PassengerFlightDocument(EmbeddedDocument):
     gate = StringField(max_length=4)
     is_ramp = BooleanField(required=True)
     registration_time = DateTimeField()
 
 
-class CargoFlight(EmbeddedDocument):
+class CargoFlightDocument(EmbeddedDocument):
     weight = FloatField(min_value=0, max_value=253.8)
 
 
 def validate_types(object):
-    if not isinstance(PassengerFlight, CargoFlight):
+    if not isinstance(PassengerFlightDocument, CargoFlightDocument):
         raise ValidationError(
             "Flight information should be instance of PassengerFlight or CargoFlight "
         )
 
 
-class Flight(Document):
+class FlightDocument(Document):
     meta = {"db_alias": "airport", "collection": "flights"}
     flight_number = StringField(max_length=6, required=True)
     airline = ReferenceField("airlines", required=True)

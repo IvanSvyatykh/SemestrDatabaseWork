@@ -1,7 +1,7 @@
 from mongoengine import Document, IntField, ReferenceField, DateTimeField
 
 
-class Weather(Document):
+class WeatherDocument(Document):
     meta = {"db_alias": "airport", "collection": "weathers"}
     runway_condition = ReferenceField("runway_conditions", required=True)
     wind_speed = IntField(min_value=0, required=True)

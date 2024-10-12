@@ -1,7 +1,7 @@
 from mongoengine import Document, StringField, IntField
 
 
-class Aircraft(Document):
+class AircraftDocument(Document):
     meta = {"db_alias": "airport", "collection": "aircrafts"}
     icao_name = StringField(max_length=4, required=True, unique=True)
     aircraft_id = StringField(

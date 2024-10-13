@@ -1,0 +1,2 @@
+seat_classes:
+  path: "../data/seat_classes.csv"

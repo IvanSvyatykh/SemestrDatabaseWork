@@ -4,21 +4,16 @@ services:
   mongo:
     image: mongo
     restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    env_file:
+      - .env
     ports:
-      - 27017:27017
+      - ${MONGODB_PORT}:${MONGODB_PORT}
 
   mongo-express:
     image: mongo-express
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo
-      - ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_ROOT_USER}
-      - ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_ROOT_PASSWORD}
-      - ME_CONFIG_BASICAUTH_USERNAME=${MONGOEXPRESS_LOGIN}
-      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGOEXPRESS_PASSWORD}
+    env_file:
+      - .env
     depends_on:
       - mongo
     ports:
-      - 8081:8081
+      - ${MONGOEXPRESS_PORT}:${MONGOEXPRESS_PORT}

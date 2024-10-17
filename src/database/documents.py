@@ -32,7 +32,7 @@ def validate_types(object):
 
 class FlightDocument(Document):
     meta = {"db_alias": "airport", "collection": "flights"}
-    flight_number = StringField(max_length=6, required=True)
+    flight_number = StringField(max_length=6, required=True, unique=True)
     airline = ReferenceField("airlines", required=True)
     aircraft = ReferenceField("aircrafts", required=True)
     arrival_airport = ReferenceField("airports", required=True)
@@ -44,9 +44,7 @@ class FlightDocument(Document):
 class AircraftDocument(Document):
     meta = {"db_alias": "airport", "collection": "aircrafts"}
     icao_name = StringField(max_length=4, required=True, unique=True)
-    aircraft_id = StringField(
-        max_length=6, required=True, unique=True, primary_key=True
-    )
+    aircraft_id = StringField(max_length=6, required=True, unique=True)
     name = StringField(max_length=50, required=True, unique=True)
     seats_num = IntField(min_value=1, max_value=555, required=True)
 
@@ -54,22 +52,14 @@ class AircraftDocument(Document):
 class AirlineDocument(Document):
     meta = {"db_alias": "airport", "collection": "airlines"}
     name = StringField(max_length=50, required=True, unique=True)
-    iata_name = StringField(
-        max_length=3, required=True, unique=True, primary_key=True
-    )
+    iata_name = StringField(max_length=3, required=True, unique=True)
 
 
 class AirportDocument(Document):
     meta = {"db_alias": "airport", "collection": "airports"}
-    iata_name = StringField(
-        max_length=3, required=True, unique=True, primary_key=True
-    )
-    name = StringField(
-        max_length=50, required=True, unique=True, primary_key=True
-    )
-    city = StringField(
-        max_length=50, required=True, unique=True, primary_key=True
-    )
+    iata_name = StringField(max_length=3, required=True, unique=True)
+    name = StringField(max_length=50, required=True, unique=True)
+    city = StringField(max_length=50, required=True)
 
 
 class PassportDocument(EmbeddedDocument):
@@ -113,7 +103,9 @@ class StatusDocuments(Document):
 
 class TicketDocument(Document):
     meta = {"db_alias": "airport", "collection": "tickets"}
-    passenger = ReferenceField("passengers", required=True)
+    passenger = ReferenceField(
+        "passengers", required=True, unique_with="flight"
+    )
     fare_conditions = ReferenceField("seat_classes", required=True)
     flight = ReferenceField("flights", required=True)
     cost = FloatField(min_value=0, required=True)
@@ -123,13 +115,9 @@ class TicketDocument(Document):
 
 class WeatherDocument(Document):
     meta = {"db_alias": "airport", "collection": "weathers"}
-    runway_condition = ReferenceField(
-        "runway_conditions", required=True
-    )
+    runway_condition = ReferenceField("runway_conditions", required=True)
     wind_speed = IntField(min_value=0, required=True)
     rainfall_amount = IntField(min_value=0, required=True)
-    temperature = IntField(
-        min_value=-100, max_value=100, required=True
-    )
+    temperature = IntField(min_value=-100, max_value=100, required=True)
     started_time = DateTimeField(required=True)
     ended_time = DateTimeField()

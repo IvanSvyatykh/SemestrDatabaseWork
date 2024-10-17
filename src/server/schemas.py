@@ -16,7 +16,7 @@ class Passenger(BaseModel):
     def validate_passport_ser(cls, pass_ser: str) -> str:
         if len(pass_ser) == 4 and pass_ser.isdigit():
             return pass_ser
-        return ValidationError(
+        raise ValidationError(
             "The passport series must be a 4-line long and consist only of digits."
         )
 
@@ -25,7 +25,7 @@ class Passenger(BaseModel):
     def validate_passport_num(cls, pass_num: str) -> str:
         if len(pass_num) == 6 and pass_num.isdigit():
             return pass_num
-        return ValidationError(
+        raise ValidationError(
             "The passport number must be a 6-line long and consist only of digits."
         )
 

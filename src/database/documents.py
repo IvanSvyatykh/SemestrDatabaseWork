@@ -13,6 +13,70 @@ from mongoengine import (
 from pydantic import ValidationError
 
 
+class AirportDocument(Document):
+    meta = {"db_alias": "airport", "collection": "airports"}
+    icao_name = StringField(
+        max_length=4, required=True, unique=True, regex=r"^[A-Z]{4}"
+    )
+    name = StringField(max_length=50, required=True, unique=True)
+    city = StringField(max_length=50, required=True)
+
+
+class PassportDocument(EmbeddedDocument):
+    meta = {"db_alias": "airport"}
+    series = StringField(max_length=4, unique_with="number")
+    number = StringField(max_length=6)
+
+
+class PassengerDocument(Document):
+    meta = {"db_alias": "airport", "collection": "passengers"}
+    name = StringField(required=True, max_length=50)
+    surname = StringField(max_length=50)
+    passport = EmbeddedDocumentField(PassportDocument)
+
+
+class SeatClassDocument(Document):
+    meta = {"db_alias": "airport", "collection": "seat_classes"}
+    fare_conditions = StringField(max_length=10, unique=True)
+
+
+class AircraftDocument(Document):
+    meta = {"db_alias": "airport", "collection": "aircrafts"}
+    icao_name = StringField(
+        max_length=4, required=True, regex=r"/^[A-Z]{1}[A-Z0-9]{1,3}$/"
+    )
+    aircraft_id = StringField(
+        max_length=6,
+        required=True,
+        unique=True,
+        regex=r"/^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$/",
+    )
+    name = StringField(max_length=50, required=True)
+    seats_num = IntField(min_value=1, max_value=853, required=True)
+
+
+class AirlineDocument(Document):
+    meta = {"db_alias": "airport", "collection": "airlines"}
+    name = StringField(max_length=50, required=True, unique=True)
+    icao_name = StringField(
+        max_length=4, required=True, unique=True, regex=r"/^[A-Z]{3}$/"
+    )
+
+
+class StatusDocuments(Document):
+    meta = {"db_alias": "airport", "collection": "statuses"}
+    status = StringField(max_length=10, required=True, unique=True)
+
+
+class ScheduleDocument(Document):
+    meta = {"db_alias": "airport", "collection": "schedules"}
+    arrival_time = DateTimeField(required=True)
+    departure_time = DateTimeField(required=True)
+    actual_arrival = DateTimeField()
+    actual_departure = DateTimeField()
+    status = ReferenceField("statuses")
+
+
 class PassengerFlightDocument(EmbeddedDocument):
     gate = StringField(max_length=4)
     is_ramp = BooleanField(required=True)
@@ -41,64 +105,11 @@ class FlightDocument(Document):
     info = DynamicField(required=True, validation=validate_types)
 
 
-class AircraftDocument(Document):
-    meta = {"db_alias": "airport", "collection": "aircrafts"}
-    icao_name = StringField(max_length=4, required=True, unique=True)
-    aircraft_id = StringField(max_length=6, required=True, unique=True)
-    name = StringField(max_length=50, required=True, unique=True)
-    seats_num = IntField(min_value=1, max_value=555, required=True)
-
-
-class AirlineDocument(Document):
-    meta = {"db_alias": "airport", "collection": "airlines"}
-    name = StringField(max_length=50, required=True, unique=True)
-    iata_name = StringField(max_length=3, required=True, unique=True)
-
-
-class AirportDocument(Document):
-    meta = {"db_alias": "airport", "collection": "airports"}
-    iata_name = StringField(max_length=3, required=True, unique=True)
-    name = StringField(max_length=50, required=True, unique=True)
-    city = StringField(max_length=50, required=True)
-
-
-class PassportDocument(EmbeddedDocument):
-    meta = {"db_alias": "airport"}
-    series = StringField(max_length=4, unique_with="number")
-    number = StringField(max_length=6)
-
-
-class PassengerDocument(Document):
-    meta = {"db_alias": "airport", "collection": "passengers"}
-    name = StringField(required=True, max_length=50)
-    surname = StringField(max_length=50)
-    passport = EmbeddedDocumentField(PassportDocument)
-
-
 class RunwayConditionDocument(Document):
     meta = {"db_alias": "airport", "collection": "runway_conditions"}
     runway_condition = StringField(
         max_length=50, required=True, unique=True
     )
-
-
-class ScheduleDocument(Document):
-    meta = {"db_alias": "airport", "collection": "schedules"}
-    arrival_time = DateTimeField(required=True)
-    departure_time = DateTimeField(required=True)
-    actual_arrival = DateTimeField()
-    actual_departure = DateTimeField()
-    status = ReferenceField("statuses")
-
-
-class SeatClassDocument(Document):
-    meta = {"db_alias": "airport", "collection": "seat_classes"}
-    fare_conditions = StringField(max_length=10, unique=True)
-
-
-class StatusDocuments(Document):
-    meta = {"db_alias": "airport", "collection": "statuses"}
-    status = StringField(max_length=10, required=True, unique=True)
 
 
 class TicketDocument(Document):

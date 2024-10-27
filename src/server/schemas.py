@@ -1,5 +1,15 @@
+import datetime
+
 from typing import Optional, Annotated
-from pydantic import BaseModel, field_validator, ValidationError, Field
+from zoneinfo import ZoneInfo
+from pydantic import (
+    BaseModel,
+    ValidationInfo,
+    field_validator,
+    ValidationError,
+    Field,
+    model_validator,
+)
 from bson import ObjectId
 from pydantic.functional_validators import AfterValidator
 
@@ -19,26 +29,8 @@ class Passenger(BaseModel):
     )
     name: str
     surname: str
-    passport_ser: str
-    passport_num: str
-
-    @field_validator("passport_ser")
-    @classmethod
-    def validate_passport_ser(cls, pass_ser: str) -> str:
-        if len(pass_ser) == 4 and pass_ser.isdigit():
-            return pass_ser
-        raise ValidationError(
-            "The passport series must be a 4-line long and consist only of digits."
-        )
-
-    @field_validator("passport_num")
-    @classmethod
-    def validate_passport_num(cls, pass_num: str) -> str:
-        if len(pass_num) == 6 and pass_num.isdigit():
-            return pass_num
-        raise ValidationError(
-            "The passport number must be a 6-line long and consist only of digits."
-        )
+    passport_ser: str = Field(max_length=4, pattern=r"^([0-9]{4})$")
+    passport_num: str = Field(max_length=6, pattern=r"^([0-9]{6})$")
 
     @field_validator("name")
     @classmethod
@@ -85,14 +77,49 @@ class Aircraft(BaseModel):
         Field(max_length=24, default=None)
     )
     icao_name: str = Field(
-        max_length=4, pattern=r"/^[A-Z]{1}[A-Z0-9]{1,3}$/"
-    )
-    aircraft_id: str = Field(
-        max_length=6,
-        pattern=r"/^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$/",
+        max_length=4, pattern=r"^[A-Z]{1}[A-Z0-9]{1,3}$"
     )
     aircraft_name: str = Field(max_length=50)
     seats_num: int = Field(gt=0, le=853)
+
+
+class AircraftNumber(BaseModel):
+    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
+        Field(max_length=24, default=None)
+    )
+
+    aircraft_id: Annotated[
+        Optional[str], AfterValidator(validate_object_id)
+    ] = Field(max_length=24, default=None)
+
+    aircraft_num: str = Field(
+        max_length=6,
+        min_length=6,
+        pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$",
+    )
+    registration_time: datetime.datetime = Field(
+        default=datetime.datetime.today()
+    )
+    derigistration_time: datetime.datetime = Field(
+        default=datetime.datetime(
+            year=9999,
+            month=12,
+            day=31,
+            hour=23,
+            minute=59,
+            second=59,
+            tzinfo=ZoneInfo("Asia/Yekaterinburg"),
+        )
+    )
+
+    @model_validator(mode="after")
+    def validate(self) -> str:
+        if self.registration_time >= self.derigistration_time:
+            raise ValidationError(
+                "Registred time can not be more or equal to derigisrated time"
+            )
+
+        return self
 
 
 class Airline(BaseModel):
@@ -101,3 +128,10 @@ class Airline(BaseModel):
     )
     name: str = Field(max_length=50)
     icao_name: str = Field(max_length=3, pattern=r"/^[A-Z]{3}$/")
+
+
+class Status(BaseModel):
+    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
+        Field(max_length=24, default=None)
+    )
+    status: str = Field(max_length=10)

@@ -43,29 +43,45 @@ class SeatClassDocument(Document):
 class AircraftDocument(Document):
     meta = {"db_alias": "airport", "collection": "aircrafts"}
     icao_name = StringField(
-        max_length=4, required=True, regex=r"/^[A-Z]{1}[A-Z0-9]{1,3}$/"
-    )
-    aircraft_id = StringField(
-        max_length=6,
-        required=True,
-        unique=True,
-        regex=r"/^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$/",
+        max_length=4, required=True, regex=r"^[A-Z]{1}[A-Z0-9]{1,3}$"
     )
     name = StringField(max_length=50, required=True)
     seats_num = IntField(min_value=1, max_value=853, required=True)
+
+
+class AircraftNumberDocument(Document):
+    meta = {"db_alias": "airport", "collection": "aircraft_ids"}
+    aircraft_id = ReferenceField("aircrafts", required=True)
+    aircraft_num = StringField(
+        min_length=6,
+        max_length=6,
+        required=True,
+        unique=True,
+        regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$",
+    )
+    registration_time = DateTimeField(required=True)
+    deregistartion_time = DateTimeField(required=True)
 
 
 class AirlineDocument(Document):
     meta = {"db_alias": "airport", "collection": "airlines"}
     name = StringField(max_length=50, required=True, unique=True)
     icao_name = StringField(
-        max_length=4, required=True, unique=True, regex=r"/^[A-Z]{3}$/"
+        max_length=3, required=True, unique=True, regex=r"^[A-Z]{3}$"
     )
 
 
-class StatusDocuments(Document):
+class StatusDocument(Document):
     meta = {"db_alias": "airport", "collection": "statuses"}
     status = StringField(max_length=10, required=True, unique=True)
+
+
+class StatusInfoDocument(Document):
+    meta = {"db_alias": "airport", "collection": "statuses_info"}
+    status = ReferenceField("statuses")
+    schedule = ReferenceField("schedules")
+    set_status_time = DateTimeField(required=True)
+    unset_status_time = DateTimeField(required=True)
 
 
 class ScheduleDocument(Document):
@@ -74,7 +90,6 @@ class ScheduleDocument(Document):
     departure_time = DateTimeField(required=True)
     actual_arrival = DateTimeField()
     actual_departure = DateTimeField()
-    status = ReferenceField("statuses")
 
 
 class PassengerFlightDocument(EmbeddedDocument):

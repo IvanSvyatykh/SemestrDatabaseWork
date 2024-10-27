@@ -1,2 +1,6 @@
 seat_classes:
   path: "../data/seat_classes.csv"
+passenger:
+  path: "../data/passengers.csv"
+runway_condition:
+  path: "../data/runway_condition.csv"

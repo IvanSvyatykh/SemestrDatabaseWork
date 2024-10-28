@@ -13,6 +13,13 @@ from mongoengine import (
 from pydantic import ValidationError
 
 
+def validate_types(object):
+    if not isinstance(PassengerFlightDocument, CargoFlightDocument):
+        raise ValidationError(
+            "Flight information should be instance of PassengerFlight or CargoFlight "
+        )
+
+
 class AirportDocument(Document):
     meta = {"db_alias": "airport", "collection": "airports"}
     icao_name = StringField(
@@ -92,21 +99,14 @@ class ScheduleDocument(Document):
     actual_departure = DateTimeField()
 
 
-class PassengerFlightDocument(EmbeddedDocument):
-    gate = StringField(max_length=4)
-    is_ramp = BooleanField(required=True)
-    registration_time = DateTimeField()
-
-
 class CargoFlightDocument(EmbeddedDocument):
     weight = FloatField(min_value=0, max_value=253.8)
 
 
-def validate_types(object):
-    if not isinstance(PassengerFlightDocument, CargoFlightDocument):
-        raise ValidationError(
-            "Flight information should be instance of PassengerFlight or CargoFlight "
-        )
+class PassengerFlightDocument(EmbeddedDocument):
+    gate = StringField(max_length=4)
+    is_ramp = BooleanField(required=True)
+    registration_time = DateTimeField()
 
 
 class FlightDocument(Document):
@@ -116,15 +116,8 @@ class FlightDocument(Document):
     aircraft = ReferenceField("aircrafts", required=True)
     arrival_airport = ReferenceField("airports", required=True)
     departure_airport = ReferenceField("airports", required=True)
-    shedule = ReferenceField("schedules", required=True)
+    schedule = ReferenceField("schedules", required=True)
     info = DynamicField(required=True, validation=validate_types)
-
-
-class RunwayConditionDocument(Document):
-    meta = {"db_alias": "airport", "collection": "runway_conditions"}
-    runway_condition = StringField(
-        max_length=50, required=True, unique=True
-    )
 
 
 class TicketDocument(Document):
@@ -137,6 +130,13 @@ class TicketDocument(Document):
     cost = FloatField(min_value=0, required=True)
     baggage_weight = IntField(min_value=0, required=True)
     is_registred = BooleanField(required=True)
+
+
+class RunwayConditionDocument(Document):
+    meta = {"db_alias": "airport", "collection": "runway_conditions"}
+    runway_condition = StringField(
+        max_length=50, required=True, unique=True
+    )
 
 
 class WeatherDocument(Document):

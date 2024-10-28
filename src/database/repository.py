@@ -1,6 +1,6 @@
+from ast import List
 import asyncio
 from datetime import datetime
-from re import A
 import re
 from zoneinfo import ZoneInfo
 from .documents import (
@@ -8,19 +8,27 @@ from .documents import (
     AircraftNumberDocument,
     AirlineDocument,
     AirportDocument,
+    CargoFlightDocument,
+    FlightDocument,
     PassengerDocument,
+    PassengerFlightDocument,
     PassportDocument,
     SeatClassDocument,
     StatusDocument,
+    StatusInfoDocument,
 )
 from server.schemas import (
     Aircraft,
     AircraftNumber,
     Airline,
     Airport,
+    Flight,
     Passenger,
+    PassengerFlightInfo,
     SeatClass,
     Status,
+    CargoFlightInfo,
+    StatusInfo,
 )
 from mongoengine import Q
 from mongoengine.fields import ObjectId
@@ -464,4 +472,138 @@ class StatusRepositiry:
 
         return Status(
             id=str(status_document.pk), status=status_document.status
+        )
+
+
+class StatusInfoRepository:
+
+    def __init__(self):
+        self.status_info = StatusInfoDocument()
+
+    async def add(self, status_info: StatusInfo) -> ObjectId:
+        status_info_document = StatusInfoDocument.objects(
+            Q(schedule=status_info.schedule_id)
+            & Q(unset_status_time__lt=status_info.set_status_time)
+        ).first()
+
+        if status_info_document is not None:
+            raise ValueError("Previous status was not unseted!")
+
+        self.status_info.status = status_info.status_id
+        self.status_info.schedule = status_info.schedule_id
+        self.status_info.set_status_time = status_info.set_status_time
+        self.status_info.unset_status_time = status_info.unset_status_time
+
+        self.status_info.save()
+        return ObjectId(str(self.status_info.pk))
+
+    async def update_unset_time(self, status_info: StatusInfo) -> None:
+        status_info_document = StatusInfoDocument.objects(
+            Q(schedule=status_info.schedule_id)
+            & Q(set_status_time=status_info.set_status_time)
+        ).first()
+
+        if status_info_document is None:
+            raise ValueError(
+                "There is not status information with this schedule and set_time!"
+            )
+
+        status_info_document.update(
+            set__unset_status_time=status_info.unset_status_time
+        )
+
+    async def get_schedule_statuses(
+        self, schedule: str
+    ) -> List[StatusInfo]:
+        status_info_documents = StatusInfoDocument.objects(
+            schedule=schedule
+        )
+        if len(status_info_documents) == 0:
+            raise ValueError(f"There is not statuses with {schedule} id !")
+
+        return status_info_documents
+
+
+class FlightRepositiry:
+
+    def __init__(self):
+        self.flight = FlightDocument()
+
+    async def add(self, flight: Flight) -> ObjectId:
+        flight_document = FlightDocument.objects(
+            flight_number=flight.flight_number
+        ).first()
+
+        if flight_document is not None:
+            raise ValueError(
+                "There is already exists flight with this number!"
+            )
+
+        self.flight.flight_number = flight.flight_number
+        self.flight.aircraft = flight.aircraft
+        self.flight.airline = flight.airline
+        self.flight.arrival_airport = flight.arrival_airport
+        self.flight.departure_airport = flight.departure_airport
+        self.flight.schedule = flight.shedule
+        if isinstance(flight.info, PassengerFlightInfo):
+            self.flight.info = PassengerFlightDocument(
+                gate=flight.info.gate,
+                is_ramp=flight.info.is_ramp,
+                registration_time=flight.info.registration_time,
+            )
+        elif isinstance(flight.info, CargoFlightInfo):
+            self.flight.info = CargoFlightDocument(
+                weight=flight.info.weight
+            )
+        else:
+            raise TypeError(
+                f"flight.info can not be type of {type(flight.info)}"
+            )
+
+        self.flight.save()
+        return ObjectId(str(self.flight.pk))
+
+    async def delete(self, flight: Flight) -> None:
+        flight_document = FlightDocument.objects(
+            flight_number=flight.flight_number
+        ).first()
+
+        if flight_document is None:
+            raise ValueError("There is no flight with this number!")
+
+        flight_document.delete()
+
+    async def update(self, flight: Flight) -> None:
+        flight_document = FlightDocument.objects(
+            flight_number=flight.flight_number
+        ).first()
+
+        if flight_document is None:
+            raise ValueError("There is no flight with this number!")
+
+        flight_document.update(
+            set__aircraft=flight.aircraft,
+            set__airline=flight.airline,
+            set__arrival_airport=flight.arrival_airport,
+            set__departure_airport=flight.departure_airport,
+            set__schedule=flight.shedule,
+        )
+
+    async def get_by_flight_num(self, flight_num: str) -> Flight:
+        flight_document = FlightDocument.objects(
+            flight_number=flight_num
+        ).first()
+
+        if flight_document is None:
+            raise ValueError("There is no flight with this number!")
+
+        return Flight(
+            id=str(flight_document.pk),
+            flight_number=flight_document.flight_number,
+            airline=flight_document.airline,
+            aircraft=flight_document.aircraft,
+            arrival_airport=flight_document.arrival_airport,
+            departure_airport=flight_document.departure_airport,
+            shedule=flight_document.schedule,
+            info=flight_document.info,
         )

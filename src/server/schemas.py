@@ -14,19 +14,21 @@ from bson import ObjectId
 from pydantic.functional_validators import AfterValidator
 
 
-def validate_object_id(object_id: str) -> str:
+def validate_object_id_field(
+    object_id: str, can_be_none: bool = True
+) -> str:
 
-    if object_id is None:
+    if object_id is None and can_be_none:
         return object_id
-
-    ObjectId(object_id)
+    elif not can_be_none:
+        ObjectId(object_id)
     return object_id
 
 
 class Passenger(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
     name: str
     surname: str
     passport_ser: str = Field(max_length=4, pattern=r"^([0-9]{4})$")
@@ -44,16 +46,16 @@ class Passenger(BaseModel):
 
 
 class SeatClass(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
     fare_condition: str = Field(max_length=10)
 
 
 class Airport(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
     icao_name: str = Field(
         max_length=3,
         pattern=r"/^[A-Z]{4}$/",
@@ -73,9 +75,9 @@ class Airport(BaseModel):
 
 
 class Aircraft(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
     icao_name: str = Field(
         max_length=4, pattern=r"^[A-Z]{1}[A-Z0-9]{1,3}$"
     )
@@ -84,12 +86,12 @@ class Aircraft(BaseModel):
 
 
 class AircraftNumber(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
 
     aircraft_id: Annotated[
-        Optional[str], AfterValidator(validate_object_id)
+        Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
 
     aircraft_num: str = Field(
@@ -123,15 +125,112 @@ class AircraftNumber(BaseModel):
 
 
 class Airline(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
     name: str = Field(max_length=50)
     icao_name: str = Field(max_length=3, pattern=r"/^[A-Z]{3}$/")
 
 
+class PassengerFlightInfo(BaseModel):
+    gate: str = Field(max_length=4)
+    is_ramp: bool
+    registration_time: datetime.datetime
+
+
+class CargoFlightInfo(BaseModel):
+    weight: int = Field(gt=0, le=640000)
+
+
+class Flight(BaseModel):
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+    flight_number: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+    airline: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+    aircraft: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+    arrival_airport: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+    departure_airport: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+    shedule: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+    info: PassengerFlightInfo | CargoFlightInfo
+
+
 class Status(BaseModel):
-    id: Annotated[Optional[str], AfterValidator(validate_object_id)] = (
-        Field(max_length=24, default=None)
-    )
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
     status: str = Field(max_length=10)
+
+
+class Shedule(BaseModel):
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+    flight: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+    arrival_time: datetime.datetime
+    departure_time: datetime.datetime
+    actual_arrival: datetime.datetime
+    actual_departure: datetime.datetime
+
+    @model_validator(mode="after")
+    def validate(self) -> str:
+        if self.departure_time >= self.arrival_time:
+            raise ValidationError(
+                "Departure time can not be more or equal to arrival time"
+            )
+
+        if self.actual_departure >= self.actual_arrival:
+            raise ValidationError(
+                "Actual departure time can not be more or equal to actual arrival time"
+            )
+
+        return self
+
+
+class StatusInfo(BaseModel):
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+    status_id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+    shedule_id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+    set_status_time: datetime.datetime = Field(
+        default=datetime.datetime.today()
+    )
+    unset_status_time: datetime.datetime = Field(
+        default=datetime.datetime(
+            year=9999,
+            month=12,
+            day=31,
+            hour=23,
+            minute=59,
+            second=59,
+            tzinfo=ZoneInfo("Asia/Yekaterinburg"),
+        )
+    )
+
+    @model_validator(mode="after")
+    def validate(self) -> str:
+        if self.set_status_time >= self.unset_status_time:
+            raise ValidationError(
+                "Registred time can not be more or equal to derigisrated time"
+            )
+
+        return self

@@ -208,7 +208,7 @@ class StatusInfo(BaseModel):
     status_id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
-    shedule_id: Annotated[
+    schedule_id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
     set_status_time: datetime.datetime = Field(

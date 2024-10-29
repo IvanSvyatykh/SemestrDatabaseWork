@@ -250,8 +250,10 @@ class Ticket(BaseModel):
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24)
 
-    coast: float = Field(ge=0)
+    number: str = Field(max_length=13, pattern=r"^([0-9]{13})$")
+
+    cost: float = Field(ge=0)
 
     baggage_weight: int = Field(ge=0)
 
-    is_registred: bool
+    is_registred: bool = Field(default=False)

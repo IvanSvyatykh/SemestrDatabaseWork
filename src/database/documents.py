@@ -127,6 +127,12 @@ class TicketDocument(Document):
     )
     fare_conditions = ReferenceField("seat_classes", required=True)
     flight = ReferenceField("flights", required=True)
+    number = StringField(
+        max_length=13,
+        required=True,
+        unique=True,
+        regex=r"^([0-9]{13})$",
+    )
     cost = FloatField(min_value=0, required=True)
     baggage_weight = IntField(min_value=0, required=True)
     is_registred = BooleanField(required=True)

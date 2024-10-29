@@ -17,6 +17,7 @@ from .documents import (
     SeatClassDocument,
     StatusDocument,
     StatusInfoDocument,
+    TicketDocument,
 )
 from server.schemas import (
     Aircraft,
@@ -31,6 +32,7 @@ from server.schemas import (
     Status,
     CargoFlightInfo,
     StatusInfo,
+    Ticket,
 )
 from mongoengine import Q
 from mongoengine.fields import ObjectId
@@ -648,4 +650,59 @@ class FlightRepositiry:
             departure_airport=flight_document.departure_airport,
             schedule=flight_document.schedule,
             info=flight_document.info,
+        )
+
+
+class TicketRepository:
+
+    def __init__(self):
+        self.ticket = TicketDocument()
+
+    async def add(self, ticket: Ticket) -> ObjectId:
+
+        ticket_document = TicketDocument.objects(
+            number=ticket.number
+        ).first()
+
+        if ticket_document is not None:
+            raise ValueError(
+                "There is alredy exists ticket with this number!"
+            )
+
+        self.ticket.passenger = ticket.passenger
+        self.ticket.fare_conditions = ticket.fare_condition
+        self.ticket.flight = ticket.flight
+        self.ticket.number = ticket.number
+        self.ticket.cost = ticket.cost
+        self.ticket.baggage_weight = ticket.baggage_weight
+        self.ticket.is_registred = ticket.is_registred
+
+        self.ticket.save()
+        return ObjectId(str(self.ticket.pk))
+
+    async def delete(self, ticket: Ticket) -> None:
+        ticket_document = TicketDocument.objects(
+            number=ticket.number
+        ).first()
+
+        if ticket_document is None:
+            raise ValueError("There is no ticket with this number!")
+
+        ticket_document.delete()
+
+    async def update(self, ticket: Ticket) -> None:
+        ticket_document = TicketDocument.objects(
+            number=ticket.number
+        ).first()
+
+        if ticket_document is None:
+            raise ValueError("There is no ticket with this number!")
+        ticket_document.update(
+            set__passenger=ticket.passenger,
+            set__fare_conditions=ticket.fare_condition,
+            set__flight=ticket.flight,
+            set__number=ticket.number,
+            set__cost=ticket.cost,
+            set__baggage_weight=ticket.baggage_weight,
+            set__is_registred=ticket.is_registred,
         )

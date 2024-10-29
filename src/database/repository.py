@@ -13,6 +13,7 @@ from .documents import (
     PassengerDocument,
     PassengerFlightDocument,
     PassportDocument,
+    ScheduleDocument,
     SeatClassDocument,
     StatusDocument,
     StatusInfoDocument,
@@ -25,6 +26,7 @@ from server.schemas import (
     Flight,
     Passenger,
     PassengerFlightInfo,
+    Schedule,
     SeatClass,
     Status,
     CargoFlightInfo,
@@ -513,7 +515,7 @@ class StatusInfoRepository:
         )
 
     async def get_schedule_statuses(
-        self, schedule: str
+        self, schedule: ObjectId
     ) -> List[StatusInfo]:
         status_info_documents = StatusInfoDocument.objects(
             schedule=schedule
@@ -522,6 +524,46 @@ class StatusInfoRepository:
             raise ValueError(f"There is not statuses with {schedule} id !")
 
         return status_info_documents
+
+
+class ScheduleRepository:
+    def __init__(self):
+        self.schedule = ScheduleDocument()
+
+    async def add(self, schedule: Schedule) -> ObjectId:
+
+        self.schedule.arrival_time = schedule.arrival_time
+        self.schedule.actual_arrival = schedule.actual_arrival
+        self.schedule.actual_departure = schedule.actual_departure
+        self.schedule.departure_time = schedule.departure_time
+        self.schedule.save()
+
+        return ObjectId(str(self.schedule.pk))
+
+    async def delete(self, obj_id: ObjectId) -> None:
+
+        schedule_document = ScheduleDocument.objects(oid=obj_id).first()
+
+        if schedule_document is None:
+            raise ValueError("There is no schedule with this Object id!")
+
+        schedule_document.delete()
+
+    async def update(self, schedule: Schedule) -> None:
+
+        schedule_document = ScheduleDocument.objects(
+            oid=schedule.id
+        ).first()
+
+        if schedule_document is None:
+            raise ValueError("There is no schedule with this Object id!")
+
+        schedule_document.update(
+            set__arrival_time=schedule.arrival_time,
+            set__actual_arrival=schedule.actual_arrival,
+            set__actual_departure=schedule.actual_departure,
+            set__departure_time=schedule.departure_time,
+        )
 
 
 class FlightRepositiry:
@@ -544,7 +586,7 @@ class FlightRepositiry:
         self.flight.airline = flight.airline
         self.flight.arrival_airport = flight.arrival_airport
         self.flight.departure_airport = flight.departure_airport
-        self.flight.schedule = flight.shedule
+        self.flight.schedule = flight.schedule
         if isinstance(flight.info, PassengerFlightInfo):
             self.flight.info = PassengerFlightDocument(
                 gate=flight.info.gate,
@@ -586,7 +628,7 @@ class FlightRepositiry:
             set__airline=flight.airline,
             set__arrival_airport=flight.arrival_airport,
             set__departure_airport=flight.departure_airport,
-            set__schedule=flight.shedule,
+            set__schedule=flight.schedule,
         )
 
     async def get_by_flight_num(self, flight_num: str) -> Flight:
@@ -604,6 +646,6 @@ class FlightRepositiry:
             aircraft=flight_document.aircraft,
             arrival_airport=flight_document.arrival_airport,
             departure_airport=flight_document.departure_airport,
-            shedule=flight_document.schedule,
+            schedule=flight_document.schedule,
             info=flight_document.info,
         )

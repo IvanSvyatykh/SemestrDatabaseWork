@@ -161,7 +161,7 @@ class Flight(BaseModel):
     departure_airport: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24)
-    shedule: Annotated[
+    schedule: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24)
     info: PassengerFlightInfo | CargoFlightInfo
@@ -174,11 +174,8 @@ class Status(BaseModel):
     status: str = Field(max_length=10)
 
 
-class Shedule(BaseModel):
+class Schedule(BaseModel):
     id: Annotated[
-        Optional[str], AfterValidator(validate_object_id_field)
-    ] = Field(max_length=24, default=None)
-    flight: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
     arrival_time: datetime.datetime
@@ -234,3 +231,27 @@ class StatusInfo(BaseModel):
             )
 
         return self
+
+
+class Ticket(BaseModel):
+    id: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24, default=None)
+
+    passenger: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+
+    fare_condition: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+
+    flight: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
+
+    coast: float = Field(ge=0)
+
+    baggage_weight: int = Field(ge=0)
+
+    is_registred: bool

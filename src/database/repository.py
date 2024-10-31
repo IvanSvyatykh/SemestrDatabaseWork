@@ -193,6 +193,7 @@ class AirportRepository:
         self.airport_document.icao_name = airport.airport_name
         self.airport_document.name = airport.airport_name
         self.airport_document.city = airport.city
+        self.airport_document.timezone = airport.timezone
         self.airport_document.save()
         return ObjectId(str(self.airport_document.pk))
 
@@ -217,18 +218,20 @@ class AirportRepository:
             id=str(airport_document.pk),
             iata_name=airport_document.iata_name,
             city=airport_document.city,
+            timezone=airport_document.timezone,
         )
 
     async def get_by_id(self, oid: ObjectId) -> Airport:
-        airport = AircraftDocument.objects(id=oid).first()
-        if airport is None:
+        airport_document = AircraftDocument.objects(id=oid).first()
+        if airport_document is None:
             raise ValueError("There is not airport with this id!")
 
         return Airport(
-            id=str(airport.pk),
-            icao_name=airport.icao_name,
-            city=airport.city,
-            airport_name=airport.name,
+            id=str(airport_document.pk),
+            icao_name=airport_document.icao_name,
+            city=airport_document.city,
+            airport_name=airport_document.name,
+            timezone=airport_document.timezone,
         )
 
 
@@ -239,7 +242,7 @@ class AircraftRepository:
 
     async def add(self, aircraft: Aircraft) -> ObjectId:
 
-        self.aircraft.icao_name = aircraft.icao_name
+        self.aircraft.iata_name = aircraft.iata_name
         self.aircraft.name = aircraft.aircraft_name
         self.aircraft.seats_num = aircraft.seats_num
         self.aircraft.save()
@@ -260,7 +263,7 @@ class AircraftRepository:
             raise ValueError("There is no aircraft wiht this object id!")
 
         aircraft_document.update(
-            set__icao_name=aircraft.icao_name,
+            set__icao_name=aircraft.iata_name,
             set__name=aircraft.aircraft_name,
             set__seats_num=aircraft.seats_num,
         )
@@ -273,7 +276,7 @@ class AircraftRepository:
 
         return Aircraft(
             id=str(aircraft_document.pk),
-            icao_name=aircraft_document.icao_name,
+            iata_name=aircraft_document.icao_name,
             aircraft_name=aircraft_document.name,
             seats_num=aircraft_document.seat_num,
         )
@@ -676,6 +679,7 @@ class TicketRepository:
         self.ticket.cost = ticket.cost
         self.ticket.baggage_weight = ticket.baggage_weight
         self.ticket.is_registred = ticket.is_registred
+        self.ticket.seat_num = ticket.seat_num
 
         self.ticket.save()
         return ObjectId(str(self.ticket.pk))
@@ -705,4 +709,5 @@ class TicketRepository:
             set__cost=ticket.cost,
             set__baggage_weight=ticket.baggage_weight,
             set__is_registred=ticket.is_registred,
+            set__seat_num=ticket.seat_num,
         )

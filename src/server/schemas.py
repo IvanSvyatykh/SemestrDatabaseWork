@@ -58,10 +58,11 @@ class Airport(BaseModel):
     ] = Field(max_length=24, default=None)
     icao_name: str = Field(
         max_length=3,
-        pattern=r"/^[A-Z]{4}$/",
+        pattern=r"/^[A-Z]{3}$/",
     )
     airport_name: str = Field(max_length=50)
     city: str = Field(max_length=50)
+    timezone: str = Field(max_length=50)
 
     @field_validator("airport_name")
     @classmethod
@@ -78,9 +79,7 @@ class Aircraft(BaseModel):
     id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
-    icao_name: str = Field(
-        max_length=4, pattern=r"^[A-Z]{1}[A-Z0-9]{1,3}$"
-    )
+    iata_name: str = Field(max_length=3, pattern=r"^[A-Z0-9]{3}$")
     aircraft_name: str = Field(max_length=50)
     seats_num: int = Field(gt=0, le=853)
 
@@ -146,9 +145,7 @@ class Flight(BaseModel):
     id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
-    flight_number: Annotated[
-        Optional[str], AfterValidator(validate_object_id_field)
-    ] = Field(max_length=24)
+    flight_number: str = Field(max_length=6)
     airline: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24)
@@ -257,3 +254,5 @@ class Ticket(BaseModel):
     baggage_weight: int = Field(ge=0)
 
     is_registred: bool = Field(default=False)
+
+    seat_num: str = Field(max_length=4, pattern=r"^([1-9]{1,3}[A-Z]{1})$")

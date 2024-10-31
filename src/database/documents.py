@@ -23,10 +23,11 @@ def validate_types(object):
 class AirportDocument(Document):
     meta = {"db_alias": "airport", "collection": "airports"}
     icao_name = StringField(
-        max_length=4, required=True, unique=True, regex=r"^[A-Z]{4}"
+        max_length=3, required=True, unique=True, regex=r"^[A-Z]{3}"
     )
     name = StringField(max_length=50, required=True, unique=True)
     city = StringField(max_length=50, required=True)
+    timezone = StringField(max_length=50, required=True)
 
 
 class PassportDocument(EmbeddedDocument):
@@ -49,8 +50,8 @@ class SeatClassDocument(Document):
 
 class AircraftDocument(Document):
     meta = {"db_alias": "airport", "collection": "aircrafts"}
-    icao_name = StringField(
-        max_length=4, required=True, regex=r"^[A-Z]{1}[A-Z0-9]{1,3}$"
+    iata_name = StringField(
+        max_length=3, required=True, regex=r"^[A-Z0-9]{3}$"
     )
     name = StringField(max_length=50, required=True)
     seats_num = IntField(min_value=1, max_value=853, required=True)
@@ -136,6 +137,11 @@ class TicketDocument(Document):
     cost = FloatField(min_value=0, required=True)
     baggage_weight = IntField(min_value=0, required=True)
     is_registred = BooleanField(required=True)
+    seat_num = StringField(
+        required=True,
+        regex=r"^([1-9]{1,3}[A-Z]{1})$",
+        unique_with="flight",
+    )
 
 
 class RunwayConditionDocument(Document):

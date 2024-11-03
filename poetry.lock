@@ -1711,6 +1711,17 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
+name = "rstr"
+version = "3.2.2"
+description = "Generate random strings in Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "rstr-3.2.2-py3-none-any.whl", hash = "sha256:f39195d38da1748331eeec52f1276e71eb6295e7949beea91a5e9af2340d7b3b"},
+    {file = "rstr-3.2.2.tar.gz", hash = "sha256:c4a564d4dfb4472d931d145c43d1cf1ad78c24592142e7755b8866179eeac012"},
+]
+
+[[package]]
 name = "shellingham"
 version = "1.5.4"
 description = "Tool to Detect Surrounding Shell"
@@ -2233,4 +2244,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "aa48d50df09cb7c3e9f6cc61724724d24d22baf359bb5429423feffa2c5dff02"
+content-hash = "4b2a149fe6b7d8f576e8df16b005f272301fea4d53ea5123026a0b2fefe5f876"

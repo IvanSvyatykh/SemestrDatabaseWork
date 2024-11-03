@@ -65,7 +65,7 @@ class AircraftNumberDocument(Document):
         max_length=6,
         required=True,
         unique=True,
-        regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$",
+        regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
     )
     registration_time = DateTimeField(required=True)
     deregistartion_time = DateTimeField(required=True)
@@ -75,7 +75,7 @@ class AirlineDocument(Document):
     meta = {"db_alias": "airport", "collection": "airlines"}
     name = StringField(max_length=50, required=True, unique=True)
     icao_name = StringField(
-        max_length=3, required=True, unique=True, regex=r"^[A-Z]{3}$"
+        max_length=2, required=True, unique=True, regex=r"^[A-Z]{2}$"
     )
 
 

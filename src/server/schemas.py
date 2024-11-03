@@ -1,7 +1,9 @@
 import datetime
 
+import os
 from typing import Optional, Annotated
 from zoneinfo import ZoneInfo
+from dotenv import load_dotenv
 from pydantic import (
     BaseModel,
     ValidationInfo,
@@ -96,11 +98,12 @@ class AircraftNumber(BaseModel):
     aircraft_num: str = Field(
         max_length=6,
         min_length=6,
-        pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{1,5}[A-Z]{0,2}$",
+        pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
     )
     registration_time: datetime.datetime = Field(
         default=datetime.datetime.today()
     )
+    load_dotenv()
     derigistration_time: datetime.datetime = Field(
         default=datetime.datetime(
             year=9999,
@@ -109,7 +112,7 @@ class AircraftNumber(BaseModel):
             hour=23,
             minute=59,
             second=59,
-            tzinfo=ZoneInfo("Asia/Yekaterinburg"),
+            tzinfo=ZoneInfo(os.getenv("TIMEZONE")),
         )
     )
 
@@ -128,7 +131,7 @@ class Airline(BaseModel):
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
     name: str = Field(max_length=50)
-    icao_name: str = Field(max_length=3, pattern=r"/^[A-Z]{3}$/")
+    iata_name: str = Field(max_length=2, pattern=r"^[A-Z]{2}$")
 
 
 class PassengerFlightInfo(BaseModel):

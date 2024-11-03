@@ -368,7 +368,7 @@ class AirlineRepository:
 
     async def add(self, airline: Airline) -> None:
         airline_document = AirlineDocument.objects(
-            icao_name=airline.icao_name
+            icao_name=airline.iata_name
         ).first()
 
         if airline_document is not None:
@@ -376,14 +376,14 @@ class AirlineRepository:
                 "There is alredy exists airline with this icao code!"
             )
 
-        self.airline.icao_name = airline.icao_name
+        self.airline.icao_name = airline.iata_name
         self.airline.name = airline.name
         self.airline.save()
         return ObjectId(str(self.airline.pk))
 
     async def delete(self, airline: Airline) -> None:
         airline_document = AirlineDocument.objects(
-            icao_name=airline.icao_name
+            icao_name=airline.iata_name
         ).first()
 
         if airline_document is None:
@@ -393,14 +393,14 @@ class AirlineRepository:
 
     async def update(self, airline: Airline) -> None:
         airline_document = AirlineDocument.objects(
-            icao_name=airline.icao_name
+            icao_name=airline.iata_name
         ).first()
 
         if airline_document is None:
             raise ValueError("There is no airline with this icao code!")
 
         airline_document.update(
-            set__icao_name=airline.icao_name, set__name=airline.name
+            set__icao_name=airline.iata_name, set__name=airline.name
         )
 
     async def get_by_id(self, oid: ObjectId) -> Airline:
@@ -412,7 +412,7 @@ class AirlineRepository:
         return Airline(
             id=str(airline_document.pk),
             name=airline_document.name,
-            icao_name=airline_document.icao_name,
+            iata_name=airline_document.icao_name,
         )
 
     async def get_by_name(self, airline_name: str) -> Airline:
@@ -426,7 +426,7 @@ class AirlineRepository:
         return Airline(
             id=str(airline_document.pk),
             name=airline_document.name,
-            icao_name=airline_document.icao_name,
+            iata_name=airline_document.icao_name,
         )
 
 

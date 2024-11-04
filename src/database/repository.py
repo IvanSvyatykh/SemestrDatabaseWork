@@ -308,7 +308,8 @@ class AircraftNumberRepository:
                 "Aircraft number can not be add, because it was not deregistred!"
             )
 
-        self.aircraft_num.aircraft_number = aircraft_number.aircraft_number
+        self.aircraft_num.aircraft_num = aircraft_number.aircraft_num
+        self.aircraft_num.airline = aircraft_number.airline
         self.aircraft_num.aircraft_id = aircraft_number.aircraft_id
         self.aircraft_num.registration_time = (
             aircraft_number.registration_time
@@ -356,6 +357,7 @@ class AircraftNumberRepository:
             id=aircraft_number_document.pk,
             aircraft_id=aircraft_number_document.aircraft_id,
             aircraft_num=aircraft_number_document.aircraft_num,
+            airline=aircraft_number_document.airline,
             registration_time=aircraft_number_document.registration_time,
             derigistration_time=aircraft_number_document.derigistration_time,
         )
@@ -588,7 +590,6 @@ class FlightRepositiry:
 
         self.flight.flight_number = flight.flight_number
         self.flight.aircraft = flight.aircraft
-        self.flight.airline = flight.airline
         self.flight.arrival_airport = flight.arrival_airport
         self.flight.departure_airport = flight.departure_airport
         self.flight.schedule = flight.schedule
@@ -630,7 +631,6 @@ class FlightRepositiry:
 
         flight_document.update(
             set__aircraft=flight.aircraft,
-            set__airline=flight.airline,
             set__arrival_airport=flight.arrival_airport,
             set__departure_airport=flight.departure_airport,
             set__schedule=flight.schedule,
@@ -647,7 +647,6 @@ class FlightRepositiry:
         return Flight(
             id=str(flight_document.pk),
             flight_number=flight_document.flight_number,
-            airline=flight_document.airline,
             aircraft=flight_document.aircraft,
             arrival_airport=flight_document.arrival_airport,
             departure_airport=flight_document.departure_airport,

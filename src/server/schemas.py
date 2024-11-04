@@ -90,7 +90,6 @@ class AircraftNumber(BaseModel):
     id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
-
     aircraft_id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
@@ -100,6 +99,9 @@ class AircraftNumber(BaseModel):
         min_length=6,
         pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
     )
+    airline: Annotated[
+        Optional[str], AfterValidator(validate_object_id_field)
+    ] = Field(max_length=24)
     registration_time: datetime.datetime = Field(
         default=datetime.datetime.today()
     )
@@ -149,9 +151,6 @@ class Flight(BaseModel):
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
     flight_number: str = Field(max_length=6)
-    airline: Annotated[
-        Optional[str], AfterValidator(validate_object_id_field)
-    ] = Field(max_length=24)
     aircraft: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24)

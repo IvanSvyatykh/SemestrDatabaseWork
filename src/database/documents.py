@@ -67,6 +67,7 @@ class AircraftNumberDocument(Document):
         unique=True,
         regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
     )
+    airline = ReferenceField("airlines", required=True)
     registration_time = DateTimeField(required=True)
     deregistartion_time = DateTimeField(required=True)
 
@@ -113,7 +114,6 @@ class PassengerFlightDocument(EmbeddedDocument):
 class FlightDocument(Document):
     meta = {"db_alias": "airport", "collection": "flights"}
     flight_number = StringField(max_length=6, required=True, unique=True)
-    airline = ReferenceField("airlines", required=True)
     aircraft = ReferenceField("aircrafts", required=True)
     arrival_airport = ReferenceField("airports", required=True)
     departure_airport = ReferenceField("airports", required=True)
@@ -142,20 +142,3 @@ class TicketDocument(Document):
         regex=r"^([1-9]{1,3}[A-Z]{1})$",
         unique_with="flight",
     )
-
-
-class RunwayConditionDocument(Document):
-    meta = {"db_alias": "airport", "collection": "runway_conditions"}
-    runway_condition = StringField(
-        max_length=50, required=True, unique=True
-    )
-
-
-class WeatherDocument(Document):
-    meta = {"db_alias": "airport", "collection": "weathers"}
-    runway_condition = ReferenceField("runway_conditions", required=True)
-    wind_speed = IntField(min_value=0, required=True)
-    rainfall_amount = IntField(min_value=0, required=True)
-    temperature = IntField(min_value=-100, max_value=100, required=True)
-    started_time = DateTimeField(required=True)
-    ended_time = DateTimeField()

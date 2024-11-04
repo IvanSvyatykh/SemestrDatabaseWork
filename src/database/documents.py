@@ -106,7 +106,9 @@ class CargoFlightDocument(EmbeddedDocument):
 
 
 class PassengerFlightDocument(EmbeddedDocument):
-    gate = StringField(max_length=4)
+    gate = StringField(
+        max_length=4, regex=r"^[A-Z]{2}[0-9]{1,2}|[A-Z]{1}[0-9]{1,2}$"
+    )
     is_ramp = BooleanField(required=True)
     registration_time = DateTimeField()
 

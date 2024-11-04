@@ -137,7 +137,9 @@ class Airline(BaseModel):
 
 
 class PassengerFlightInfo(BaseModel):
-    gate: str = Field(max_length=4)
+    gate: str = Field(
+        max_length=4, pattern=r"^[A-Z]{2}[0-9]{1,2}|[A-Z]{1}[0-9]{1,2}$"
+    )
     is_ramp: bool
     registration_time: datetime.datetime
 

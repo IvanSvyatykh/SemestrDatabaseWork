@@ -16,6 +16,7 @@ pyyaml = "^6.0.2"
 black = "^24.10.0"
 tqdm = "^4.66.5"
 rstr = "^3.2.2"
+matplotlib = "^3.9.2"
 
 
 [tool.poetry.group.dev.dependencies]

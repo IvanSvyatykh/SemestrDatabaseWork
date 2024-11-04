@@ -3,11 +3,12 @@ import logging
 
 
 from dotenv import load_dotenv
+import numpy as np
 import yaml
 from pathlib import Path
 from tqdm import tqdm
 
-from normalize_data import FUNCTION
+from prepare_data import FUNCTION
 
 logger = logging.getLogger(name="db insert")
 logging.basicConfig(level=logging.INFO)
@@ -26,9 +27,9 @@ def __read_config(config_path: Path) -> dict:
     return config
 
 
-def __normalize_data(config: dict) -> None:
+def __prepare_data(config: dict) -> None:
 
-    for data_name in tqdm(FUNCTION.keys(), desc="Files normalized"):
+    for data_name in tqdm(FUNCTION.keys(), desc="Files normalization"):
         if data_name in config:
             Path.mkdir(
                 config[data_name]["result_dir"],
@@ -48,7 +49,7 @@ def main(config_path: Path):
     paths_keys = ["path", "result_dir"]
     __convert_str_to_path(config, paths_keys)
     logger.info("Start normalization")
-    __normalize_data(config)
+    __prepare_data(config)
 
 
 if __name__ == "__main__":
@@ -56,5 +57,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c", "--config", help=True, required=True, type=Path
     )
+    parser.add_argument(
+        "-rs",
+        "--random_seed",
+        help=True,
+        required=False,
+        type=int,
+        default=42,
+    )
     args = parser.parse_args()
+    np.random.seed(args.random_seed)
     main(args.config)

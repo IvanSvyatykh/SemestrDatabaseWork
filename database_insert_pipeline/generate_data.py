@@ -3,6 +3,7 @@ import os
 import random
 from zoneinfo import ZoneInfo
 from bson import ObjectId
+import numpy as np
 import rstr
 import pandas as pd
 
@@ -47,10 +48,19 @@ def __generate_dates_for_flight_num(
     return res
 
 
-def generate_aircraft_number_story(
-    aircraft_id: ObjectId,
+def __generate_flight_number(pattern: str, aircraft_nums: list) -> str:
+    while True:
+        number = rstr.xeger(string_or_regex=pattern)
+
+        if number not in aircraft_nums:
+            return number
+
+
+def generate_aircraft_number_history(
+    aircraft_id: str,
     pattern: str,
     min_year: int,
+    airlines: pd.DataFrame,
     max_year: int = 2015,
     timezone: str = "Asia/Yekaterinburg",
 ) -> pd.DataFrame:
@@ -62,13 +72,63 @@ def generate_aircraft_number_story(
     temp_dic["aircraft_num"] = []
     temp_dic["registration_date"] = []
     temp_dic["deregistration_date"] = []
+    temp_dic["iata_airlines"] = []
     for i in range(1, len(dates), 2):
 
         temp_dic["aircraft_id"].append(str(aircraft_id))
         temp_dic["aircraft_num"].append(
-            rstr.xeger(string_or_regex=pattern)
+            __generate_flight_number(
+                pattern=pattern, aircraft_nums=temp_dic["aircraft_num"]
+            )
+        )
+        temp_dic["iata_airlines"].append(
+            airlines.sample(n=1)["iata_name"].iloc[0]
         )
         temp_dic["registration_date"].append(dates[i - 1])
-        temp_dic["deregistration_date"].append([dates[i]])
+        temp_dic["deregistration_date"].append(dates[i])
 
     return pd.DataFrame(temp_dic)
+
+
+def __generate_registration_time(
+    schedules_data: pd.DataFrame, schedule_id: int
+) -> datetime.datetime:
+    scheduled_arrival = datetime.datetime.fromisoformat(
+        schedules_data[schedules_data["id"] == schedule_id][
+            "scheduled_arrival"
+        ].iloc[-1]
+    )
+    return scheduled_arrival - datetime.timedelta(hours=2)
+
+
+def generate_passengers_flight_info_df(
+    flights_data: pd.DataFrame, schedules_data: pd.DataFrame, pattern: str
+) -> pd.DataFrame:
+    info = {}
+    info["flight_id"] = flights_data["flight_id"]
+    info["gate"] = [
+        rstr.xeger(string_or_regex=pattern)
+        for i in range(len(flights_data))
+    ]
+    info["is_ramp"] = np.random.binomial(
+        n=1, p=0.9, size=len(flights_data)
+    ).astype(bool)
+    info["registration_time"] = [
+        __generate_registration_time(schedules_data, id)
+        for id in flights_data["schedule"]
+    ]
+    return pd.DataFrame(info)
+
+
+def generate_status_history(schedule_data: pd.DataFrame) -> pd.DataFrame:
+    result = {}
+    result["status_id"] = []
+    result["schedule_id"] = []
+    result["start_time"] = []
+    result["end_time"] = []
+    for _, row in schedule_data.iterrows():
+        result["status_id"].append(row["status"])
+        result["schedule_id"].append(row["id"])
+        result["start_time"].append(row["scheduled_arrival"])
+        result["end_time"].append(row["scheduled_departure"])
+    return pd.DataFrame(result)

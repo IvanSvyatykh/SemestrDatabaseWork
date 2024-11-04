@@ -6,16 +6,16 @@ passengers:
   path: "../data/passengers.csv"
   result_dir: "../data/normalized"
   depends: []
-aircrafts:
-  path: "../data/aircrafts.csv" 
+airlines:
+  path : "../data/airlines.csv"
   result_dir: "../data/normalized"
   depends: []
 airports:
   path: "../data/airports.csv"
   result_dir: "../data/normalized"
   depends: []
-airlines:
-  path : "../data/airlines.csv"
+aircrafts:
+  path: "../data/aircrafts.csv" 
   result_dir: "../data/normalized"
   depends: []
 flights:

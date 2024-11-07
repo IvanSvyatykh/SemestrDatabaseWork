@@ -16,7 +16,7 @@ from .documents import (
     ScheduleDocument,
     FairCondDocument,
     StatusDocument,
-    StatusInfoDocument,
+    StatusHistoryDocument,
     TicketDocument,
 )
 from server.schemas import (
@@ -31,7 +31,7 @@ from server.schemas import (
     FairCondition,
     Status,
     CargoFlightInfo,
-    StatusInfo,
+    StatusHistory,
     Ticket,
 )
 from mongoengine import Q
@@ -228,7 +228,7 @@ class AirportRepository:
 
         return Airport(
             id=str(airport_document.pk),
-            icao_name=airport_document.icao_name,
+            iata_name=airport_document.icao_name,
             city=airport_document.city,
             airport_name=airport_document.name,
             timezone=airport_document.timezone,
@@ -484,13 +484,13 @@ class StatusRepositiry:
         )
 
 
-class StatusInfoRepository:
+class StatusHistoryRepository:
 
     def __init__(self):
-        self.status_info = StatusInfoDocument()
+        self.status_info = StatusHistoryDocument()
 
-    async def add(self, status_info: StatusInfo) -> ObjectId:
-        status_info_document = StatusInfoDocument.objects(
+    async def add(self, status_info: StatusHistory) -> ObjectId:
+        status_info_document = StatusHistoryDocument.objects(
             Q(schedule=status_info.schedule_id)
             & Q(unset_status_time__lt=status_info.set_status_time)
         ).first()
@@ -506,8 +506,8 @@ class StatusInfoRepository:
         self.status_info.save()
         return ObjectId(str(self.status_info.pk))
 
-    async def update_unset_time(self, status_info: StatusInfo) -> None:
-        status_info_document = StatusInfoDocument.objects(
+    async def update_unset_time(self, status_info: StatusHistory) -> None:
+        status_info_document = StatusHistoryDocument.objects(
             Q(schedule=status_info.schedule_id)
             & Q(set_status_time=status_info.set_status_time)
         ).first()
@@ -523,8 +523,8 @@ class StatusInfoRepository:
 
     async def get_schedule_statuses(
         self, schedule: ObjectId
-    ) -> List[StatusInfo]:
-        status_info_documents = StatusInfoDocument.objects(
+    ) -> List[StatusHistory]:
+        status_info_documents = StatusHistoryDocument.objects(
             schedule=schedule
         )
         if len(status_info_documents) == 0:

@@ -58,7 +58,7 @@ class Airport(BaseModel):
     id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)
-    icao_name: str = Field(
+    iata_name: str = Field(
         max_length=3,
         pattern=r"/^[A-Z]{3}$/",
     )
@@ -199,7 +199,7 @@ class Schedule(BaseModel):
         return self
 
 
-class StatusInfo(BaseModel):
+class StatusHistory(BaseModel):
     id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)

@@ -85,7 +85,7 @@ class StatusDocument(Document):
     status = StringField(max_length=10, required=True, unique=True)
 
 
-class StatusInfoDocument(Document):
+class StatusHistoryDocument(Document):
     meta = {"db_alias": "airport", "collection": "statuses_info"}
     status = ReferenceField("statuses")
     schedule = ReferenceField("schedules")

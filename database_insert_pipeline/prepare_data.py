@@ -22,11 +22,19 @@ def __write_data_to_csv(
 def __prepare_passenger(path_to_csv: Path, path_to_res_dir: Path) -> None:
     passenger_data = pd.read_csv(path_to_csv)
     passenger_id = passenger_data["passenger_id"]
+    passenger_name = passenger_data["passenger_name"]
+    passenger_data = passenger_data.drop("passenger_name", axis=1)
     passenger_data = passenger_data.drop("passenger_id", axis=1)
-    passenger_data["passpor_ser"] = passenger_id.apply(
+    passenger_data["name"] = passenger_name.apply(
         lambda x: x.split(" ")[0].strip(" ")
     )
-    passenger_data["passpor_num"] = passenger_id.apply(
+    passenger_data["surname"] = passenger_name.apply(
+        lambda x: x.split(" ")[-1].strip(" ")
+    )
+    passenger_data["passport_ser"] = passenger_id.apply(
+        lambda x: x.split(" ")[0].strip(" ")
+    )
+    passenger_data["passport_num"] = passenger_id.apply(
         lambda x: x.split(" ")[-1].strip(" ")
     )
     __write_data_to_csv(passenger_data, path_to_csv.name, path_to_res_dir)

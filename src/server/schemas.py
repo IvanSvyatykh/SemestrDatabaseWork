@@ -47,7 +47,7 @@ class Passenger(BaseModel):
         return surname.upper()
 
 
-class SeatClass(BaseModel):
+class FairCondition(BaseModel):
     id: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24, default=None)

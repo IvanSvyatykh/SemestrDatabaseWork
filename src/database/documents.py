@@ -43,7 +43,7 @@ class PassengerDocument(Document):
     passport = EmbeddedDocumentField(PassportDocument)
 
 
-class SeatClassDocument(Document):
+class FairCondDocument(Document):
     meta = {"db_alias": "airport", "collection": "seat_classes"}
     fare_conditions = StringField(max_length=10, unique=True)
 

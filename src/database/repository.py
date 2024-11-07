@@ -14,7 +14,7 @@ from .documents import (
     PassengerFlightDocument,
     PassportDocument,
     ScheduleDocument,
-    SeatClassDocument,
+    FairCondDocument,
     StatusDocument,
     StatusInfoDocument,
     TicketDocument,
@@ -28,7 +28,7 @@ from server.schemas import (
     Passenger,
     PassengerFlightInfo,
     Schedule,
-    SeatClass,
+    FairCondition,
     Status,
     CargoFlightInfo,
     StatusInfo,
@@ -128,13 +128,13 @@ class PassengerRepository:
         )
 
 
-class SeatClassRepository:
+class FairCondRepository:
 
     def __init__(self):
-        self.seat_class = SeatClassDocument()
+        self.seat_class = FairCondDocument()
 
-    async def add(self, s_class: SeatClass) -> ObjectId:
-        seat_class_db_document = SeatClassDocument.objects(
+    async def add(self, s_class: FairCondition) -> ObjectId:
+        seat_class_db_document = FairCondDocument.objects(
             fare_conditions=s_class.fare_condition
         ).first()
 
@@ -144,8 +144,8 @@ class SeatClassRepository:
             return ObjectId(str(self.seat_class.pk))
         raise ValueError("Seat class with this name already exist!")
 
-    async def delete(self, s_class: SeatClass) -> None:
-        seat_class_db_document = SeatClassDocument.objects(
+    async def delete(self, s_class: FairCondition) -> None:
+        seat_class_db_document = FairCondDocument.objects(
             fare_conditions=s_class.fare_condition
         ).first()
 
@@ -153,24 +153,24 @@ class SeatClassRepository:
             raise ValueError("There is not class with this name!")
         seat_class_db_document.delete()
 
-    async def get_by_class_name(self, class_name: str) -> SeatClass:
-        seat_class_db_document = SeatClassDocument.objects(
+    async def get_by_class_name(self, class_name: str) -> FairCondition:
+        seat_class_db_document = FairCondDocument.objects(
             fare_conditions=class_name
         ).first()
 
         if seat_class_db_document is None:
             raise ValueError("There is not class with this name!")
-        return SeatClass(
+        return FairCondition(
             id=str(seat_class_db_document.pk),
             fare_condition=seat_class_db_document.fare_conditions,
         )
 
-    async def get_by_id(self, oid: ObjectId) -> SeatClass:
-        seat_class_db_document = SeatClassDocument.objects(id=oid).first()
+    async def get_by_id(self, oid: ObjectId) -> FairCondition:
+        seat_class_db_document = FairCondDocument.objects(id=oid).first()
 
         if seat_class_db_document is None:
             raise ValueError("There is not class with this name!")
-        return SeatClass(
+        return FairCondition(
             id=str(seat_class_db_document.pk),
             fare_condition=seat_class_db_document.fare_conditions,
         )

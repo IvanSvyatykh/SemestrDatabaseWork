@@ -75,16 +75,12 @@ async def __load_status_history(csv_path: Path) -> None:
     status_repository = StatusRepositiry()
     for _, row in status_histories_df.iterrows():
         status_history = StatusHistory(
-            status=await status_repository.get_by_id(
-                statuses_df[statuses_df["id"] == row["status_id"]][
-                    "oid"
-                ].iloc[0]
-            ),
-            schedule=await schedule_repository.get_by_id(
-                schedules_df[schedules_df["id"] == row["schedule_id"]][
-                    "oid"
-                ].iloc[0]
-            ),
+            status_id=statuses_df[statuses_df["id"] == row["status_id"]][
+                "oid"
+            ].iloc[0],
+            schedule_id=schedules_df[
+                schedules_df["id"] == row["schedule_id"]
+            ]["oid"].iloc[0],
             set_status_time=datetime.datetime.fromisoformat(
                 str(row["start_time"])
             ),

@@ -1,4 +1,7 @@
+import datetime
+import os
 from pathlib import Path
+from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 
@@ -172,6 +175,30 @@ def __prepare_flights(path_to_csv: Path, path_to_res_dir: Path) -> None:
         path_to_res_dir,
     )
     __write_data_to_csv(statuses_data, "statuses.csv", path_to_res_dir)
+    schedules_data["actual_departure"].fillna(
+        datetime.datetime(
+            year=9999,
+            month=12,
+            day=31,
+            hour=23,
+            minute=59,
+            second=59,
+            tzinfo=ZoneInfo(os.getenv("TIMEZONE")),
+        ),
+        inplace=True,
+    )
+    schedules_data["actual_arrival"].fillna(
+        datetime.datetime(
+            year=9999,
+            month=12,
+            day=31,
+            hour=23,
+            minute=59,
+            second=59,
+            tzinfo=ZoneInfo(os.getenv("TIMEZONE")),
+        ),
+        inplace=True,
+    )
     __write_data_to_csv(schedules_data, "schedules.csv", path_to_res_dir)
     __write_data_to_csv(flights_data, path_to_csv.name, path_to_res_dir)
 

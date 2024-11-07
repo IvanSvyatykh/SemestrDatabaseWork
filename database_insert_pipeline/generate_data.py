@@ -129,6 +129,6 @@ def generate_status_history(schedule_data: pd.DataFrame) -> pd.DataFrame:
     for _, row in schedule_data.iterrows():
         result["status_id"].append(row["status"])
         result["schedule_id"].append(row["id"])
-        result["start_time"].append(row["scheduled_arrival"])
-        result["end_time"].append(row["scheduled_departure"])
+        result["start_time"].append(row["scheduled_departure"])
+        result["end_time"].append(row["scheduled_arrival"])
     return pd.DataFrame(result)

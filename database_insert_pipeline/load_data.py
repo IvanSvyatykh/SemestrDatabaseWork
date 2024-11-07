@@ -1,22 +1,16 @@
 import pandas as pd
 from pathlib import Path
+import datetime
+import sys
+
+
+sys.path.append("..")
+
 from database.repository import *
-from src.server.schemas import *
+from src.schemas import *
 
 
-async def load_fair_conds(csv_path: Path) -> None:
-
-    fair_conds_df = pd.read_csv(csv_path)
-    oids = []
-    repository = FairCondRepository()
-    for _, row in fair_conds_df.iterrows():
-        fair_cond = FairCondition(fare_condition=row["fare_conditions"])
-        oids.append(str(await repository.add(fair_cond)))
-    fair_conds_df["oid"] = oids
-    fair_conds_df.to_csv(csv_path, index=False)
-
-
-async def load_airports(csv_path: Path) -> None:
+async def __load_airports(csv_path: Path) -> None:
 
     airports_df = pd.read_csv(csv_path)
     oids = []
@@ -33,39 +27,70 @@ async def load_airports(csv_path: Path) -> None:
     airports_df.to_csv(csv_path, index=False)
 
 
-async def load_schedule(csv_path: Path) -> None:
+async def __load_schedules(csv_path: Path) -> None:
 
     schedules_df = pd.read_csv(csv_path)
     oids = []
     schedule_repository = ScheduleRepository()
     for _, row in schedules_df.iterrows():
         schedule = Schedule(
-            arrival_time=row["scheduled_arrival"],
-            departure_time=row["scheduled_departure"],
-            actual_arrival=row["actual_arrival"],
-            actual_departure=row["actual_departure"],
+            arrival_time=datetime.datetime.fromisoformat(
+                str(row["scheduled_arrival"])
+            ),
+            departure_time=datetime.datetime.fromisoformat(
+                str(row["scheduled_departure"])
+            ),
+            actual_arrival=datetime.datetime.fromisoformat(
+                str(row["actual_arrival"])
+            ),
+            actual_departure=datetime.datetime.fromisoformat(
+                str(row["actual_departure"])
+            ),
         )
         oids.append(str(await schedule_repository.add(schedule)))
     schedules_df["oid"] = oids
     schedules_df.to_csv(csv_path, index=False)
 
 
-async def load_status_history(csv_path: Path) -> None:
+async def __load_statuses(csv_path: Path) -> None:
+    statuses_df = pd.read_csv(csv_path)
+    oids = []
+    status_repository = StatusRepositiry()
+
+    for _, row in statuses_df.iterrows():
+        status = Status(status=row["status"])
+        oids.append(str(await status_repository.add(status)))
+
+    statuses_df["oid"] = oids
+    statuses_df.to_csv(csv_path, index=False)
+
+
+async def __load_status_history(csv_path: Path) -> None:
     status_histories_df = pd.read_csv(csv_path)
-    fair_conds_df = pd.read_csv(csv_path.parent / "statuses.csv")
+    statuses_df = pd.read_csv(csv_path.parent / "statuses.csv")
     schedules_df = pd.read_csv(csv_path.parent / "schedules.csv")
     oids = []
     status_history_repository = StatusHistoryRepository()
+    schedule_repository = ScheduleRepository()
+    status_repository = StatusRepositiry()
     for _, row in status_histories_df.iterrows():
         status_history = StatusHistory(
-            status_id=fair_conds_df[
-                fair_conds_df["id"] == row["status_id"]
-            ]["oid"].iloc[0],
-            schedule_id=schedules_df[
-                schedules_df["id"] == row["schedule_id"]
-            ]["oid"].iloc[0],
-            set_status_time=row["start_time"],
-            unset_status_time=row["end_time"],
+            status=await status_repository.get_by_id(
+                statuses_df[statuses_df["id"] == row["status_id"]][
+                    "oid"
+                ].iloc[0]
+            ),
+            schedule=await schedule_repository.get_by_id(
+                schedules_df[schedules_df["id"] == row["schedule_id"]][
+                    "oid"
+                ].iloc[0]
+            ),
+            set_status_time=datetime.datetime.fromisoformat(
+                str(row["start_time"])
+            ),
+            unset_status_time=datetime.datetime.fromisoformat(
+                str(row["end_time"])
+            ),
         )
         oids.append(
             str(await status_history_repository.add(status_history))
@@ -74,7 +99,7 @@ async def load_status_history(csv_path: Path) -> None:
     status_histories_df.to_csv(csv_path, index=False)
 
 
-async def load_airlines(csv_path: Path) -> None:
+async def __load_airlines(csv_path: Path) -> None:
     airlines_df = pd.read_csv(csv_path)
     oids = []
     airline_repository = AirlineRepository()
@@ -86,7 +111,7 @@ async def load_airlines(csv_path: Path) -> None:
     airlines_df.to_csv(csv_path, index=False)
 
 
-async def load_aircraft(csv_path: Path) -> None:
+async def __load_aircraft(csv_path: Path) -> None:
     aircrafts_df = pd.read_csv(csv_path)
     oids = []
     aircraft_repository = AircraftRepository()
@@ -103,7 +128,7 @@ async def load_aircraft(csv_path: Path) -> None:
     aircrafts_df.to_csv(csv_path, index=False)
 
 
-async def load_aircraft_numbers(csv_path: Path) -> None:
+async def __load_aircraft_numbers(csv_path: Path) -> None:
     aircraft_numbers_df = pd.read_csv(csv_path)
     aircrafts_df = pd.read_csv(csv_path.parent / "aircrafts.csv")
     airlines_df = pd.read_csv(csv_path.parent / "airlines.csv")
@@ -129,7 +154,7 @@ async def load_aircraft_numbers(csv_path: Path) -> None:
     aircraft_numbers_df.to_csv(csv_path, index=False)
 
 
-async def load_flights(csv_path: Path) -> None:
+async def __load_flights(csv_path: Path) -> None:
 
     flights_df = pd.read_csv(csv_path)
     aircrafts_df = pd.read_csv(csv_path.parent / "aircrafts.csv")
@@ -192,7 +217,7 @@ async def load_flights(csv_path: Path) -> None:
         flights_df.to_csv(csv_path)
 
 
-async def load_passengers(csv_path: Path) -> None:
+async def __load_passengers(csv_path: Path) -> None:
 
     passengers_df = pd.read_csv(csv_path)
     oids = []
@@ -211,7 +236,19 @@ async def load_passengers(csv_path: Path) -> None:
     passengers_df["oid"] = oids
 
 
-async def load_tickets(csv_path: Path) -> None:
+async def __load_fair_conds(csv_path: Path) -> None:
+
+    fair_conds_df = pd.read_csv(csv_path)
+    oids = []
+    repository = FairCondRepository()
+    for _, row in fair_conds_df.iterrows():
+        fair_cond = FairCondition(fare_condition=row["fare_conditions"])
+        oids.append(str(await repository.add(fair_cond)))
+    fair_conds_df["oid"] = oids
+    fair_conds_df.to_csv(csv_path, index=False)
+
+
+async def __load_tickets(csv_path: Path) -> None:
 
     tickets_df = pd.read_csv(csv_path)
     passengers_df = pd.read_csv(csv_path.parent / "passengers.csv")
@@ -242,3 +279,18 @@ async def load_tickets(csv_path: Path) -> None:
         oids.append(str(await ticket_repository.add(ticket)))
     tickets_df["oid"] = oids
     tickets_df.to_csv(csv_path, index=False)
+
+
+LOAD_FUNCTIONS = {
+    "airports": __load_airports,
+    "schedule": __load_schedules,
+    "status": __load_statuses,
+    "status_history": __load_status_history,
+    "airline": __load_airlines,
+    "aircraft": __load_aircraft,
+    "aircraft_number": __load_aircraft_numbers,
+    "fair_cond": __load_fair_conds,
+    "passenger": __load_passengers,
+    "flight": __load_flights,
+    "ticket": __load_tickets,
+}

@@ -78,7 +78,7 @@ async def main(config_path: Path):
     paths_keys = ["path", "result_dir"]
     __convert_str_to_path(config, paths_keys)
     logger.info("Start normalization")
-    # __prepare_data(config)
+    __prepare_data(config)
     logger.info("Start loading data to database")
     await __load_data(config)
 

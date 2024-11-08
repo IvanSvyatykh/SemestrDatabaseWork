@@ -299,8 +299,8 @@ class AircraftNumberRepository:
     async def add(self, aircraft_number: AircraftNumber) -> ObjectId:
 
         aircraft_number_document = AircraftNumberDocument.objects(
-            Q(aircraft_id=aircraft_number.aircraft_id)
-            & Q(deregistartion_time__lt=aircraft_number.registration_time)
+            Q(aircraft_id=ObjectId(aircraft_number.aircraft_id))
+            & Q(deregistartion_time__gte=aircraft_number.registration_time)
         ).first()
 
         if aircraft_number_document is not None:
@@ -309,8 +309,10 @@ class AircraftNumberRepository:
             )
         self.aircraft_num = AircraftNumberDocument()
         self.aircraft_num.aircraft_num = aircraft_number.aircraft_num
-        self.aircraft_num.airline = aircraft_number.airline
-        self.aircraft_num.aircraft_id = aircraft_number.aircraft_id
+        self.aircraft_num.airline = ObjectId(aircraft_number.airline)
+        self.aircraft_num.aircraft_id = ObjectId(
+            aircraft_number.aircraft_id
+        )
         self.aircraft_num.registration_time = (
             aircraft_number.registration_time
         )
@@ -449,7 +451,7 @@ class StatusRepositiry:
         self.status = StatusDocument()
         self.status.status = status.status
         self.status.save()
-        return ObjectId(str(self.status.pk))
+        return ObjectId(str(self.status.id))
 
     async def delete(self, status: Status) -> None:
         status_document = StatusDocument.objects(
@@ -489,20 +491,20 @@ class StatusHistoryRepository:
 
     async def add(self, status_info: StatusHistory) -> ObjectId:
         status_info_document = StatusHistoryDocument.objects(
-            Q(schedule=status_info.schedule_id)
+            Q(schedule=ObjectId(status_info.schedule_id))
             & Q(unset_status_time__lt=status_info.set_status_time)
         ).first()
 
         if status_info_document is not None:
             raise ValueError("Previous status was not unseted!")
         self.status_info = StatusHistoryDocument()
-        self.status_info.status = status_info.status_id
-        self.status_info.schedule = status_info.schedule_id
+        self.status_info.status = ObjectId(status_info.status_id)
+        self.status_info.schedule = ObjectId(status_info.schedule_id)
         self.status_info.set_status_time = status_info.set_status_time
         self.status_info.unset_status_time = status_info.unset_status_time
 
         self.status_info.save()
-        return ObjectId(str(self.status_info.pk))
+        return ObjectId(str(self.status_info.id))
 
     async def update_unset_time(self, status_info: StatusHistory) -> None:
         status_info_document = StatusHistoryDocument.objects(
@@ -543,7 +545,7 @@ class ScheduleRepository:
         self.schedule.departure_time = schedule.departure_time
         self.schedule.save()
 
-        return ObjectId(str(self.schedule.pk))
+        return ObjectId(str(self.schedule.id))
 
     async def delete(self, obj_id: ObjectId) -> None:
 
@@ -570,14 +572,6 @@ class ScheduleRepository:
             set__departure_time=schedule.departure_time,
         )
 
-    async def get_by_id(self, oid: str) -> ScheduleDocument:
-        schedule_document = ScheduleDocument.objects(id=oid).first()
-
-        if schedule_document is None:
-            raise ValueError("There is no schedule with this Object id!")
-
-        return schedule_document
-
 
 class FlightRepositiry:
 
@@ -585,20 +579,12 @@ class FlightRepositiry:
         self.flight = FlightDocument()
 
     async def add(self, flight: Flight) -> ObjectId:
-        flight_document = FlightDocument.objects(
-            flight_number=flight.flight_number
-        ).first()
-
-        if flight_document is not None:
-            raise ValueError(
-                "There is already exists flight with this number!"
-            )
         self.flight = FlightDocument()
         self.flight.flight_number = flight.flight_number
-        self.flight.aircraft = flight.aircraft
-        self.flight.arrival_airport = flight.arrival_airport
-        self.flight.departure_airport = flight.departure_airport
-        self.flight.schedule = flight.schedule
+        self.flight.aircraft = ObjectId(flight.aircraft)
+        self.flight.arrival_airport = ObjectId(flight.arrival_airport)
+        self.flight.departure_airport = ObjectId(flight.departure_airport)
+        self.flight.schedule = ObjectId(flight.schedule)
         if isinstance(flight.info, PassengerFlightInfo):
             self.flight.info = PassengerFlightDocument(
                 gate=flight.info.gate,
@@ -677,9 +663,9 @@ class TicketRepository:
                 "There is alredy exists ticket with this number!"
             )
         self.ticket = TicketDocument()
-        self.ticket.passenger = ticket.passenger
-        self.ticket.fare_conditions = ticket.fare_condition
-        self.ticket.flight = ticket.flight
+        self.ticket.passenger = ObjectId(ticket.passenger)
+        self.ticket.fare_conditions = ObjectId(ticket.fare_condition)
+        self.ticket.flight = ObjectId(ticket.flight)
         self.ticket.number = ticket.number
         self.ticket.cost = ticket.cost
         self.ticket.baggage_weight = ticket.baggage_weight

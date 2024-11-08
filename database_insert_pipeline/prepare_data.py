@@ -4,6 +4,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
+import rstr
 
 from generate_data import (
     generate_aircraft_number_history,
@@ -59,7 +60,7 @@ def __get_aircraft_number_story(
                 result,
                 generate_aircraft_number_history(
                     id,
-                    pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
+                    pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{2}[A-Z]{3}$",
                     min_year=2000,
                     max_year=2015,
                     airlines=airlines,
@@ -208,10 +209,10 @@ def __prepare_tickets(path_to_csv: Path, path_to_res_dir: Path) -> None:
     tickets_data = pd.read_csv(path_to_csv)
     passenger_id = tickets_data["passenger_id"]
     tickets_data = tickets_data.drop("passenger_id", axis=1)
-    tickets_data["passpor_ser"] = passenger_id.apply(
+    tickets_data["passport_ser"] = passenger_id.apply(
         lambda x: x.split(" ")[0].strip(" ")
     )
-    tickets_data["passpor_num"] = passenger_id.apply(
+    tickets_data["passport_num"] = passenger_id.apply(
         lambda x: x.split(" ")[-1].strip(" ")
     )
     fare_cond_data = pd.read_csv("../data/normalized/fare_condition.csv")
@@ -228,7 +229,22 @@ def __prepare_tickets(path_to_csv: Path, path_to_res_dir: Path) -> None:
     tickets_data["is_regisred"] = np.random.binomial(
         n=1, p=0.9, size=len(tickets_data)
     ).astype(bool)
+    tickets_data["ticket_no"] = __generate_ticket_num(len(tickets_data))
     __write_data_to_csv(tickets_data, path_to_csv.name, path_to_res_dir)
+
+
+def __generate_ticket_num(size: int) -> list:
+
+    ticket_no = []
+
+    for i in range(size):
+        while True:
+            no = rstr.xeger(r"^[0-9]{10}$")
+            if not no in ticket_no:
+                ticket_no.append(no)
+                break
+
+    return ticket_no
 
 
 FUNCTION = {

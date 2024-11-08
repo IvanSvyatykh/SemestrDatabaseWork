@@ -19,8 +19,14 @@ def __generate_dates_for_flight_num(
     step = max(3, (max_year - min_year) // 3)
     for i in range(min_year, max_year, step):
         year = random.randint(i, i + step)
-        month = random.randint(1, 12)
-        day = random.randint(1, 28)
+        if i > min_year:
+            month = random.randint(res[-1].month, 12)
+            day = random.randint(res[-1].day, 28)
+
+        else:
+            month = random.randint(1, 12)
+            day = random.randint(1, 28)
+
         date = datetime.datetime(
             year,
             month,

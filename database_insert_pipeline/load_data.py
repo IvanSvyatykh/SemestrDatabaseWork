@@ -71,8 +71,6 @@ async def __load_status_history(csv_path: Path) -> None:
     schedules_df = pd.read_csv(csv_path.parent / "schedules.csv")
     oids = []
     status_history_repository = StatusHistoryRepository()
-    schedule_repository = ScheduleRepository()
-    status_repository = StatusRepositiry()
     for _, row in status_histories_df.iterrows():
         status_history = StatusHistory(
             status_id=statuses_df[statuses_df["id"] == row["status_id"]][
@@ -140,8 +138,12 @@ async def __load_aircraft_numbers(csv_path: Path) -> None:
             airline=airlines_df[
                 airlines_df["iata_name"] == row["iata_airlines"]
             ]["oid"].iloc[0],
-            registration_time=row["registration_date"],
-            derigistration_time=row["deregistration_date"],
+            registration_time=datetime.datetime.fromisoformat(
+                str(row["registration_date"])
+            ),
+            derigistration_time=datetime.datetime.fromisoformat(
+                str(row["deregistration_date"])
+            ),
         )
         oids.append(
             str(await aircraft_number_repository.add(aircraft_number))
@@ -178,16 +180,16 @@ async def __load_flights(csv_path: Path) -> None:
             info = PassengerFlightInfo(
                 gate=passenger_flight_infos_df[
                     passenger_flight_infos_df["flight_id"]
-                    == row["flight_id"]["gate"]
-                ].iloc[0],
+                    == row["flight_id"]
+                ]["gate"].iloc[0],
                 is_ramp=passenger_flight_infos_df[
                     passenger_flight_infos_df["flight_id"]
-                    == row["flight_id"]["is_ramp"]
-                ].iloc[0],
+                    == row["flight_id"]
+                ]["is_ramp"].iloc[0],
                 registration_time=passenger_flight_infos_df[
                     passenger_flight_infos_df["flight_id"]
-                    == row["flight_id"]["registration_time"]
-                ].iloc[0],
+                    == row["flight_id"]
+                ]["registration_time"].iloc[0],
             )
         else:
             continue
@@ -209,13 +211,16 @@ async def __load_flights(csv_path: Path) -> None:
             info=info,
         )
         oids.append(str(await flight_repository.add(flight)))
-        flights_df["oid"] = oids
-        flights_df.to_csv(csv_path)
+    flights_df["oid"] = oids
+    flights_df.to_csv(csv_path)
 
 
 async def __load_passengers(csv_path: Path) -> None:
 
-    passengers_df = pd.read_csv(csv_path)
+    passengers_df = pd.read_csv(
+        csv_path,
+        dtype={"passport_ser": str, "passport_num": str},
+    )
     oids = []
     passenger_repository = PassengerRepository()
 
@@ -225,11 +230,12 @@ async def __load_passengers(csv_path: Path) -> None:
             name=row["name"],
             surname=row["surname"],
             passport_ser=row["passport_ser"],
-            passport_num=["passport_num"],
+            passport_num=row["passport_num"],
         )
         oids.append(str(await passenger_repository.add(passenger)))
 
     passengers_df["oid"] = oids
+    passengers_df.to_csv(csv_path, index=False)
 
 
 async def __load_fair_conds(csv_path: Path) -> None:
@@ -246,8 +252,14 @@ async def __load_fair_conds(csv_path: Path) -> None:
 
 async def __load_tickets(csv_path: Path) -> None:
 
-    tickets_df = pd.read_csv(csv_path)
-    passengers_df = pd.read_csv(csv_path.parent / "passengers.csv")
+    tickets_df = pd.read_csv(
+        csv_path,
+        dtype={"passport_ser": str, "passport_num": str, "ticket_no": str},
+    )
+    passengers_df = pd.read_csv(
+        csv_path.parent / "passengers.csv",
+        dtype={"passport_ser": str, "passport_num": str},
+    )
     flights_df = pd.read_csv(csv_path.parent / "flights.csv")
     fair_conds_df = pd.read_csv(csv_path.parent / "fare_condition.csv")
     oids = []
@@ -256,9 +268,8 @@ async def __load_tickets(csv_path: Path) -> None:
     for _, row in tickets_df.iterrows():
         ticket = Ticket(
             passenger=passengers_df[
-                passengers_df["passport_ser"]
-                == row["passpor_ser"] & passengers_df["passpor_num"]
-                == row["passpor_num"]
+                (passengers_df["passport_ser"] == row["passport_ser"])
+                & (passengers_df["passport_num"] == row["passport_num"])
             ]["oid"].iloc[0],
             fare_condition=fair_conds_df[
                 fair_conds_df["id"] == row["fare_conditions"]

@@ -10,11 +10,14 @@ from mongoengine import (
     IntField,
     EmbeddedDocumentField,
 )
+from numpy import ubyte
 from pydantic import BaseModel, ValidationError
 
 
 def validate_types(object):
-    if not isinstance(PassengerFlightDocument, CargoFlightDocument):
+    if not isinstance(
+        object, (PassengerFlightDocument, CargoFlightDocument)
+    ):
         raise ValidationError(
             "Flight information should be instance of PassengerFlight or CargoFlight "
         )
@@ -59,15 +62,15 @@ class AircraftDocument(Document):
 
 class AircraftNumberDocument(Document):
     meta = {"db_alias": "airport", "collection": "aircraft_ids"}
-    aircraft_id = ReferenceField("aircrafts", required=True)
+    aircraft_id = ReferenceField("AircraftDocument", required=True)
     aircraft_num = StringField(
         min_length=6,
         max_length=6,
         required=True,
         unique=True,
-        regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
+        regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{2}[A-Z]{3}$",
     )
-    airline = ReferenceField("airlines", required=True)
+    airline = ReferenceField("AirlineDocument", required=True)
     registration_time = DateTimeField(required=True)
     deregistartion_time = DateTimeField(required=True)
 
@@ -87,8 +90,8 @@ class StatusDocument(Document):
 
 class StatusHistoryDocument(Document):
     meta = {"db_alias": "airport", "collection": "statuses_info"}
-    status = ReferenceField("statuses")
-    schedule = ReferenceField("schedules")
+    status = ReferenceField("StatusDocument", required=True)
+    schedule = ReferenceField("ScheduleDocument", required=True)
     set_status_time = DateTimeField(required=True)
     unset_status_time = DateTimeField(required=True)
 
@@ -115,32 +118,34 @@ class PassengerFlightDocument(EmbeddedDocument):
 
 class FlightDocument(Document):
     meta = {"db_alias": "airport", "collection": "flights"}
-    flight_number = StringField(max_length=6, required=True, unique=True)
-    aircraft = ReferenceField("aircrafts", required=True)
-    arrival_airport = ReferenceField("airports", required=True)
-    departure_airport = ReferenceField("airports", required=True)
-    schedule = ReferenceField("schedules", required=True)
+    flight_number = StringField(
+        max_length=6, required=True, unique_with="schedule"
+    )
+    aircraft = ReferenceField("AircraftDocument", required=True)
+    arrival_airport = ReferenceField("AirportDocument", required=True)
+    departure_airport = ReferenceField("AirportDocument", required=True)
+    schedule = ReferenceField("ScheduleDocument", required=True)
     info = DynamicField(required=True, validation=validate_types)
 
 
 class TicketDocument(Document):
     meta = {"db_alias": "airport", "collection": "tickets"}
-    passenger = ReferenceField(
-        "passengers", required=True, unique_with="flight"
+    passenger = ReferenceField("PassengerDocument", required=True)
+    fare_conditions = ReferenceField("FairCondDocument", required=True)
+    flight = ReferenceField(
+        "FlightDocument", unique_with="seat_num", required=True
     )
-    fare_conditions = ReferenceField("seat_classes", required=True)
-    flight = ReferenceField("flights", required=True)
     number = StringField(
-        max_length=13,
+        max_length=10,
         required=True,
         unique=True,
-        regex=r"^([0-9]{13})$",
+        regex=r"^[0-9]{10}$",
     )
     cost = FloatField(min_value=0, required=True)
     baggage_weight = IntField(min_value=0, required=True)
     is_registred = BooleanField(required=True)
     seat_num = StringField(
         required=True,
-        regex=r"^([1-9]{1,3}[A-Z]{1})$",
+        regex=r"^[1-9]{1}[0-9]{1,2}[A-Z]{1}|[1-9]{1}[A-Z]{1}$",
         unique_with="flight",
     )

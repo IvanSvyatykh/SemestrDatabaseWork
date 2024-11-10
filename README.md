@@ -2,44 +2,48 @@
 
 ```
 ├── data
+│   ├── aircrafts.csv
+│   ├── airlines.csv
+│   ├── airports.csv
+│   ├── data.zip
+│   ├── fare_condition.csv
+│   ├── flights.csv
+│   ├── passengers.csv
+│   ├── runway_condition.csv
+│   └── tickets.csv
+├── database
+│   ├── config.py
+│   ├── documents.py
+│   ├── __init__.py
+│   └── repository.py
 ├── database_insert_pipeline
 │   ├── config.yaml
 │   ├── data_loader.py
-│   └── main.py
+│   ├── generate_data.py
+│   ├── insert_script.py
+│   ├── load_data.py
+│   ├── prepare_data.py
 ├── docker-compose.yaml
 ├── notebooks
-│   └── refactor_passenger.ipynb
+│   ├── refacror_flight.ipynb
+│   ├── refactor_aircrafts.ipynb
+│   ├── refactor_airlines.ipynb
+│   ├── refactor_airports.ipynb
+│   ├── refactor_fare_condition.ipynb
+│   ├── refactor_passenger.ipynb
+│   ├── refactor_schedule.ipynb
+│   └── refactor_tickets.ipynb
 ├── poetry.lock
 ├── pyproject.toml
 ├── README.md
-└── src
-    ├── database
-    │   ├── config.py
-    │   ├── documents
-    │   │   ├── aircrafts_document.py
-    │   │   ├── airline_document.py
-    │   │   ├── airport_document.py
-    │   │   ├── flight_document.py
-    │   │   ├── __init__.py
-    │   │   ├── passenger_document.py
-    │   │   ├── runway_document.py
-    │   │   ├── schedule_document.py
-    │   │   ├── seatclasses_document.py
-    │   │   ├── status_document.py
-    │   │   ├── ticket_document.py
-    │   │   └── weather_document.py
-    │   ├── __init__.py
-    │   └── service
-    │       └── passenger_service.py
-    ├── main.py
-    └── server
-        ├── api
-        │   └── __init__.py
-        ├── app.py
-        ├── __init.py
-        └── schemas
-            ├── __init__.py
-            ├── passenger.py
+├── src
+│   ├── main.py
+│   └── schemas.py
+└── ytsaurus
+    ├── init.sh
+    ├── start_YTsaurus.sh
+    ├── stop_YTsaurus.sh
+    └── YTsaurus_cluster.yaml
 
 ```
 - docker-compose.yaml - Файл с инструкцией для запуска docker compose.
@@ -73,8 +77,16 @@
 
 Для подключение к веб-клиенту, в браузере перейте по URL `http://localhost:8081`
 
-# Заполнения БД(Не готово, архива нет)
+# Заполнения БД
 
-Для заполнения бд тестовыми данными, необходимо воспользоваться скриптом находящимся в папке `database_insert_pipeline`, для заполнения бд, необходимо перейти в папку `database_insert_pipeline`, а также заполнить пути до файлов с данными в  файл `config.yaml`.
+Архив с данными можно скачать по [ссылке](https://disk.yandex.ru/d/bfcM9RSuw-ipJA). 
 
-Архив с данными можно скачать по [ссылке]().
+Для заполнения бд тестовыми данными, необходимо перейти в корень:
+- Настроить переменные окружения в .env по примеру из `.env.example`
+- `mkdir ./data`
+- `cd ./data`
+- `unzip db_semest_job_data.zip`
+- `cd ..`
+- `cd ./database_insert_pipeline`
+- Ввести команду в консоль `python insert_script.py -c config.yaml -rs <some_int>`
+

@@ -37,6 +37,8 @@ from src.schemas import (
 from mongoengine import Q
 from mongoengine.fields import ObjectId
 
+from config import config
+
 MAX_DB_DATETIME = datetime.datetime(
     year=9999,
     month=12,
@@ -44,7 +46,7 @@ MAX_DB_DATETIME = datetime.datetime(
     hour=23,
     minute=59,
     second=59,
-    tzinfo=ZoneInfo("Asia/Yekaterinburg"),
+    tzinfo=ZoneInfo(config.TIMEZONE),
 )
 
 

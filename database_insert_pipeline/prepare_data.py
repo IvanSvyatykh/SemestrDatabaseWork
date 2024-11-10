@@ -79,7 +79,7 @@ def __prepare_aircrafts(path_to_csv: Path, path_to_res_dir: Path) -> None:
     airafts_data = pd.concat(
         [airafts_data, airafts_data.sample(frac=0.7)], ignore_index=True
     )
-    airafts_data["id"] = [i + 1 for i in range(len(airafts_data))]
+    airafts_data["id"] = np.arange(1, len(airafts_data) + 1)
     aircraft_number_story = __get_aircraft_number_story(
         airafts_data["id"], pd.read_csv(path_to_res_dir / "airlines.csv")
     )
@@ -150,7 +150,7 @@ def __prepare_flights(path_to_csv: Path, path_to_res_dir: Path) -> None:
     ]
 
     flights_data = pd.read_csv(path_to_csv)
-    flights_data["is_passenger"] = [True for i in range(len(flights_data))]
+    flights_data["is_passenger"] = True
     schedules_data, schedules_id = __get_schedule_df(
         flights_data, schedule_columns
     )

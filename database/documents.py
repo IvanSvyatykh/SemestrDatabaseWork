@@ -10,8 +10,7 @@ from mongoengine import (
     IntField,
     EmbeddedDocumentField,
 )
-from numpy import ubyte
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 
 def validate_types(object):

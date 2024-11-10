@@ -6,13 +6,12 @@ import sys
 
 sys.path.append("..")
 
-from dotenv import load_dotenv
 import numpy as np
 import yaml
 from pathlib import Path
 from tqdm import tqdm
 
-from database.config import DatabaseConfig
+from database.db_config import DatabaseConfig
 from load_data import LOAD_FUNCTIONS
 from prepare_data import FUNCTION
 
@@ -71,7 +70,6 @@ async def __load_data(config: dict) -> None:
 
 
 async def main(config_path: Path):
-    load_dotenv()
     logger.info("Reading config")
     config = __read_config(config_path)
     logger.info("Convert str type to Path type")

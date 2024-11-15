@@ -1,1 +1,0 @@
-kubectl delete -f YTsaurus_cluster.yaml

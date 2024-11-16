@@ -7,6 +7,8 @@ services:
       - .env
     ports:
       - ${MONGODB_PORT}:${MONGODB_PORT}
+    volumes:
+      - /data/mongo
 
   mongo-express:
     image: mongo-express
@@ -27,7 +29,6 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - SPARK_USER=spark
-      - Ы
     ports:
       - '8080:8080'
     depends_on:
@@ -47,3 +48,20 @@ services:
       - SPARK_USER=spark
     depends_on:
       - spark
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # MinIO Console
+    environment:
+      MINIO_ROOT_USER: ${S3_ADMIN}
+      MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
+    volumes:
+      - minio_data:/data/s3
+    command: server /data/s3 --console-address ":9001"
+
+volumes:
+  mongo_data:
+  minio_data:

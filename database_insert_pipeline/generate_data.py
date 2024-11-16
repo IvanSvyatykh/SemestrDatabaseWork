@@ -67,7 +67,7 @@ def generate_aircraft_number_history(
     min_year: int,
     airlines: pd.DataFrame,
     max_year: int = 2015,
-    timezone: str = config.TIMEZONE,
+    timezone: str = config.DEFAULT_TIMEZONE,
 ) -> pd.DataFrame:
 
     dates = __generate_dates_for_flight_num(min_year, max_year, timezone)

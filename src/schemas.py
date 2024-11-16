@@ -6,7 +6,6 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from pydantic import (
     BaseModel,
-    ValidationInfo,
     field_validator,
     ValidationError,
     Field,
@@ -33,8 +32,8 @@ class Passenger(BaseModel):
     ] = Field(max_length=24, default=None)
     name: str
     surname: str
-    passport_ser: str = Field(max_length=4, pattern=r"^([0-9]{4})$")
-    passport_num: str = Field(max_length=6, pattern=r"^([0-9]{6})$")
+    passport_ser: str = Field(max_length=4, pattern=r"^[0-9]{4}$")
+    passport_num: str = Field(max_length=6, pattern=r"^[0-9]{6}$")
 
     @field_validator("name")
     @classmethod
@@ -97,7 +96,7 @@ class AircraftNumber(BaseModel):
     aircraft_num: str = Field(
         max_length=6,
         min_length=6,
-        pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{3}[A-Z]{3}$",
+        pattern=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{2}[A-Z]{3}$",
     )
     airline: Annotated[
         Optional[str], AfterValidator(validate_object_id_field)
@@ -120,12 +119,6 @@ class AircraftNumber(BaseModel):
 
     @model_validator(mode="after")
     def validate(self):
-        self.registration_time = datetime.datetime.isoformat(
-            self.registration_time
-        )
-        self.derigistration_time = datetime.datetime.isoformat(
-            self.derigistration_time
-        )
         if self.registration_time >= self.derigistration_time:
             raise ValidationError(
                 "Registred time can not be more or equal to derigisrated time"
@@ -257,7 +250,7 @@ class Ticket(BaseModel):
         Optional[str], AfterValidator(validate_object_id_field)
     ] = Field(max_length=24)
 
-    number: str = Field(max_length=13, pattern=r"^([0-9]{13})$")
+    number: str = Field(max_length=10, pattern=r"^[0-9]{10}$")
 
     cost: float = Field(ge=0)
 
@@ -265,4 +258,7 @@ class Ticket(BaseModel):
 
     is_registred: bool = Field(default=False)
 
-    seat_num: str = Field(max_length=4, pattern=r"^([1-9]{1,3}[A-Z]{1})$")
+    seat_num: str = Field(
+        max_length=4,
+        pattern=r"^[1-9]{1}[0-9]{1,2}[A-Z]{1}|[1-9]{1}[A-Z]{1}$",
+    )

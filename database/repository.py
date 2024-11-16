@@ -46,7 +46,7 @@ MAX_DB_DATETIME = datetime.datetime(
     hour=23,
     minute=59,
     second=59,
-    tzinfo=ZoneInfo(config.TIMEZONE),
+    tzinfo=ZoneInfo(config.DEFAULT_TIMEZONE),
 )
 
 

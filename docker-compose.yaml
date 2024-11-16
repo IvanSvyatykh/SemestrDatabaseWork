@@ -22,17 +22,10 @@ services:
   spark:
     image: docker.io/bitnami/spark:3.5
     environment:
-      - SPARK_LOCAL_IP = 172.18.0.3
       - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_USER=spark
     ports:
       - "4040:4040"
       - "8080:8080"
-      - "7077:7077"
     depends_on:
       - mongo
 
@@ -40,26 +33,19 @@ services:
     image: docker.io/bitnami/spark:3.5
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_WORKER_MEMORY=4G
-      - SPARK_WORKER_CORES=3
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_USER=spark
+    env_file:
+      - .env
     depends_on:
       - spark
 
   minio:
     image: minio/minio:latest
     container_name: minio
+    env_file:
+      - .env
     ports:
-      - "9000:9000" # S3 API
-      - "9001:9001" # MinIO Console
-    environment:
-      MINIO_ROOT_USER: ${S3_ADMIN}
-      MINIO_ROOT_PASSWORD: ${S3_PASSWORD}
+      - ${MINIO_API_PORT}:9000 # MinIO API
+      - ${MINIO_WEB_UI_PORT}:9001 # MinIO Web UI
     volumes:
       - minio_data:/data/s3
     command: server /data/s3 --console-address ":9001"

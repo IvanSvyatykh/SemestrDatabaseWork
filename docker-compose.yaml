@@ -3,7 +3,6 @@ name: semestr_job
 services:
   mongo:
     image: mongo
-    restart: always
     env_file:
       - .env
     ports:
@@ -11,7 +10,6 @@ services:
 
   mongo-express:
     image: mongo-express
-    restart: always
     env_file:
       - .env
     depends_on:
@@ -28,18 +26,23 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - SPARK_USER=spark
+      - Ы
     ports:
       - '8080:8080'
+    depends_on:
+      - mongo
 
   spark-worker:
     image: docker.io/bitnami/spark:3.5
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=4G
+      - SPARK_WORKER_CORES=3
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - SPARK_USER=spark
+    depends_on:
+      - spark

@@ -8,7 +8,7 @@ from config import config
 class DatabaseConfig:
     def __init__(self):
         self.db_client = None
-        self.url = f"mongodb://{config.MONGO_ROOT_USERNAME}:{config.ME_CONFIG_BASICAUTH_PASSWORD}@{config.MONGODB_DOMAIN}:{config.MONGODB_PORT}"
+        self.url = f"mongodb://{config.MONGODB_USERNAME}:{config.ME_CONFIG_BASICAUTH_PASSWORD}@{config.MONGODB_DOMAIN}:{config.MONGODB_PORT}"
 
     def start_connection(self, db_name: str):
         if self.db_client is None:

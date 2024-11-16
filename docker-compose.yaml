@@ -20,6 +20,7 @@ services:
   spark:
     image: docker.io/bitnami/spark:3.5
     environment:
+      - SPARK_LOCAL_IP = 172.18.0.3
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no

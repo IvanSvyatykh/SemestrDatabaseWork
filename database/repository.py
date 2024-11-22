@@ -311,7 +311,7 @@ class AircraftNumberRepository:
             )
         self.aircraft_num = AircraftNumberDocument()
         self.aircraft_num.aircraft_num = aircraft_number.aircraft_num
-        self.aircraft_num.airline = ObjectId(aircraft_number.airline)
+        self.aircraft_num.airline_id = ObjectId(aircraft_number.airline)
         self.aircraft_num.aircraft_id = ObjectId(
             aircraft_number.aircraft_id
         )
@@ -500,8 +500,8 @@ class StatusHistoryRepository:
         if status_info_document is not None:
             raise ValueError("Previous status was not unseted!")
         self.status_info = StatusHistoryDocument()
-        self.status_info.status = ObjectId(status_info.status_id)
-        self.status_info.schedule = ObjectId(status_info.schedule_id)
+        self.status_info.status_id = ObjectId(status_info.status_id)
+        self.status_info.schedule_id = ObjectId(status_info.schedule_id)
         self.status_info.set_status_time = status_info.set_status_time
         self.status_info.unset_status_time = status_info.unset_status_time
 
@@ -583,10 +583,12 @@ class FlightRepositiry:
     async def add(self, flight: Flight) -> ObjectId:
         self.flight = FlightDocument()
         self.flight.flight_number = flight.flight_number
-        self.flight.aircraft = ObjectId(flight.aircraft)
-        self.flight.arrival_airport = ObjectId(flight.arrival_airport)
-        self.flight.departure_airport = ObjectId(flight.departure_airport)
-        self.flight.schedule = ObjectId(flight.schedule)
+        self.flight.aircraft_id = ObjectId(flight.aircraft)
+        self.flight.arrival_airport_id = ObjectId(flight.arrival_airport)
+        self.flight.departure_airport_id = ObjectId(
+            flight.departure_airport
+        )
+        self.flight.schedule_id = ObjectId(flight.schedule)
         if isinstance(flight.info, PassengerFlightInfo):
             self.flight.info = PassengerFlightDocument(
                 gate=flight.info.gate,
@@ -665,9 +667,9 @@ class TicketRepository:
                 "There is alredy exists ticket with this number!"
             )
         self.ticket = TicketDocument()
-        self.ticket.passenger = ObjectId(ticket.passenger)
-        self.ticket.fare_conditions = ObjectId(ticket.fare_condition)
-        self.ticket.flight = ObjectId(ticket.flight)
+        self.ticket.passenger_id = ObjectId(ticket.passenger)
+        self.ticket.fare_conditions_id = ObjectId(ticket.fare_condition)
+        self.ticket.flight_id = ObjectId(ticket.flight)
         self.ticket.number = ticket.number
         self.ticket.cost = ticket.cost
         self.ticket.baggage_weight = ticket.baggage_weight

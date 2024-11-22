@@ -69,7 +69,7 @@ class AircraftNumberDocument(Document):
         unique=True,
         regex=r"^[A-Z]-[A-Z]{4}|[A-Z]{2}-[A-Z]{3}|N[0-9]{2}[A-Z]{3}$",
     )
-    airline = ReferenceField("AirlineDocument", required=True)
+    airline_id = ReferenceField("AirlineDocument", required=True)
     registration_time = DateTimeField(required=True)
     deregistartion_time = DateTimeField(required=True)
 
@@ -89,8 +89,8 @@ class StatusDocument(Document):
 
 class StatusHistoryDocument(Document):
     meta = {"db_alias": "airport", "collection": "statuses_info"}
-    status = ReferenceField("StatusDocument", required=True)
-    schedule = ReferenceField("ScheduleDocument", required=True)
+    status_id = ReferenceField("StatusDocument", required=True)
+    schedule_id = ReferenceField("ScheduleDocument", required=True)
     set_status_time = DateTimeField(required=True)
     unset_status_time = DateTimeField(required=True)
 
@@ -120,18 +120,18 @@ class FlightDocument(Document):
     flight_number = StringField(
         max_length=6, required=True, unique_with="schedule"
     )
-    aircraft = ReferenceField("AircraftDocument", required=True)
-    arrival_airport = ReferenceField("AirportDocument", required=True)
-    departure_airport = ReferenceField("AirportDocument", required=True)
-    schedule = ReferenceField("ScheduleDocument", required=True)
+    aircraft_id = ReferenceField("AircraftDocument", required=True)
+    arrival_airport_id = ReferenceField("AirportDocument", required=True)
+    departure_airport_id = ReferenceField("AirportDocument", required=True)
+    schedule_id = ReferenceField("ScheduleDocument", required=True)
     info = DynamicField(required=True, validation=validate_types)
 
 
 class TicketDocument(Document):
     meta = {"db_alias": "airport", "collection": "tickets"}
-    passenger = ReferenceField("PassengerDocument", required=True)
-    fare_conditions = ReferenceField("FairCondDocument", required=True)
-    flight = ReferenceField(
+    passenger_id = ReferenceField("PassengerDocument", required=True)
+    fare_conditions_id = ReferenceField("FairCondDocument", required=True)
+    flight_id = ReferenceField(
         "FlightDocument", unique_with="seat_num", required=True
     )
     number = StringField(

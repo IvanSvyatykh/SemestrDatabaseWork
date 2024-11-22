@@ -493,7 +493,7 @@ class StatusHistoryRepository:
 
     async def add(self, status_info: StatusHistory) -> ObjectId:
         status_info_document = StatusHistoryDocument.objects(
-            Q(schedule=ObjectId(status_info.schedule_id))
+            Q(schedule_id=ObjectId(status_info.schedule_id))
             & Q(unset_status_time__lt=status_info.set_status_time)
         ).first()
 
@@ -510,7 +510,7 @@ class StatusHistoryRepository:
 
     async def update_unset_time(self, status_info: StatusHistory) -> None:
         status_info_document = StatusHistoryDocument.objects(
-            Q(schedule=status_info.schedule_id)
+            Q(schedule_id=status_info.schedule_id)
             & Q(set_status_time=status_info.set_status_time)
         ).first()
 

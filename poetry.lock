@@ -1814,7 +1814,13 @@ files = [
 ]
 
 [package.dependencies]
+googleapis-common-protos = {version = ">=1.56.4", optional = true, markers = "extra == \"connect\""}
+grpcio = {version = ">=1.56.0", optional = true, markers = "extra == \"connect\""}
+grpcio-status = {version = ">=1.56.0", optional = true, markers = "extra == \"connect\""}
+numpy = {version = ">=1.15,<2", optional = true, markers = "extra == \"connect\""}
+pandas = {version = ">=1.0.5", optional = true, markers = "extra == \"connect\""}
 py4j = "0.10.9.7"
+pyarrow = {version = ">=4.0.0", optional = true, markers = "extra == \"connect\""}
 
 [package.extras]
 connect = ["googleapis-common-protos (>=1.56.4)", "grpcio (>=1.56.0)", "grpcio-status (>=1.56.0)", "numpy (>=1.15,<2)", "pandas (>=1.0.5)", "pyarrow (>=4.0.0)"]
@@ -2581,4 +2587,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "5e4f7b99f8d0dfd0e31194eada25dc557d6af3ea7fa473787ce1134b00abc7d8"
+content-hash = "2b7e856b97a4558cfe9881bc3fbbfd98ec8519e257d45bd90bcab5b0d25b8b28"

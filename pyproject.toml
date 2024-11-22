@@ -15,7 +15,7 @@ pyyaml = "^6.0.2"
 black = "^24.10.0"
 tqdm = "^4.66.5"
 rstr = "^3.2.2"
-pyspark = {extras = ["hadoop"], version = "^3.5.3"}
+pyspark = {extras = ["connect"], version = "^3.5.3"}
 python-dotenv = "^1.0.1"
 pydantic = "^2.9.2"
 undetected-chromedriver = "^3.5.5"

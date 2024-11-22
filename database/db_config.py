@@ -2,13 +2,18 @@ import os
 from mongoengine import connect
 from mongoengine.connection import disconnect
 from dotenv import dotenv_values
-from config import config
+from config.config import (
+    MONGODB_USERNAME,
+    MONGODB_PASSWORD,
+    MONGODB_PORT,
+    MONGODB_DOMAIN,
+)
 
 
 class DatabaseConfig:
     def __init__(self):
         self.db_client = None
-        self.url = f"mongodb://{config.MONGODB_USERNAME}:{config.ME_CONFIG_BASICAUTH_PASSWORD}@{config.MONGODB_DOMAIN}:{config.MONGODB_PORT}"
+        self.url = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@{MONGODB_DOMAIN}:{MONGODB_PORT}"
 
     def start_connection(self, db_name: str):
         if self.db_client is None:

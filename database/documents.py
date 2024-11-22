@@ -118,7 +118,7 @@ class PassengerFlightDocument(EmbeddedDocument):
 class FlightDocument(Document):
     meta = {"db_alias": "airport", "collection": "flights"}
     flight_number = StringField(
-        max_length=6, required=True, unique_with="schedule"
+        max_length=6, required=True, unique_with="schedule_id"
     )
     aircraft_id = ReferenceField("AircraftDocument", required=True)
     arrival_airport_id = ReferenceField("AirportDocument", required=True)
@@ -146,5 +146,5 @@ class TicketDocument(Document):
     seat_num = StringField(
         required=True,
         regex=r"^[1-9]{1}[0-9]{1,2}[A-Z]{1}|[1-9]{1}[A-Z]{1}$",
-        unique_with="flight",
+        unique_with="flight_id",
     )

@@ -15,7 +15,7 @@ pyyaml = "^6.0.2"
 black = "^24.10.0"
 tqdm = "^4.66.5"
 rstr = "^3.2.2"
-pyspark = {extras = ["sql"], version = "^3.5.3"}
+pyspark = {extras = ["hadoop"], version = "^3.5.3"}
 python-dotenv = "^1.0.1"
 pydantic = "^2.9.2"
 undetected-chromedriver = "^3.5.5"
@@ -24,6 +24,8 @@ pyarrow = "^18.0.0"
 grpcio = "^1.67.1"
 protobuf = "^5.28.3"
 grpcio-status = "^1.67.1"
+boto3 = "^1.35.66"
+aws-hadoop = "^1.0.dev2"
 
 
 [tool.poetry.group.dev.dependencies]

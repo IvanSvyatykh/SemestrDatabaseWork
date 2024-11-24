@@ -1,12 +1,37 @@
+import abc
+from pathlib import Path
 import pymongo
 from typing import List
-from pyspark.sql import SparkSession, DataFrame
-from pyspark import SparkConf, SparkContext
-from pandas import DataFrame as PandasDataFrame
 from pyspark.sql.types import StructType
+from pyspark.sql import SparkSession, DataFrame
+from spark_df_schemas import COLLECTIONS_SCHEMAS
 
 
-class MongoDbExtractractor:
+class PySparkDataExtractor(abc.ABC):
+
+    @abc.abstractmethod
+    def start_spark_connection(
+        self, park_session_name: str, spark_ip: str = "localhost"
+    ):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def db_objects(self) -> List[str]:
+        pass
+
+    @abc.abstractmethod
+    def stop_spark_connection(self):
+        pass
+
+    @abc.abstractmethod
+    def get_db_obj_df(
+        self, obj_name: str, obj_schema: StructType
+    ) -> DataFrame:
+        pass
+
+
+class MongoDbExtractractor(PySparkDataExtractor):
 
     def __init__(
         self,
@@ -20,11 +45,11 @@ class MongoDbExtractractor:
         self.mongodb_uri = f"mongodb://{db_username}:{db_password}@{db_domain}:{db_port}/{db_name}?authSource=admin"
         client = pymongo.MongoClient(self.mongodb_uri)
         db = client[db_name]
-        self.__db_collections = db.list_collection_names()
+        self.__db_objects = db.list_collection_names()
 
     @property
-    def db_collections(self) -> List[str]:
-        return self.__db_collections
+    def db_objects(self) -> List[str]:
+        return self.__db_objects
 
     def start_spark_connection(
         self, spark_session_name: str, spark_ip: str = "localhost"
@@ -43,60 +68,36 @@ class MongoDbExtractractor:
     def stop_spark_connection(self) -> None:
         self.spark.stop()
 
-    def get_df_from_collection(
-        self, collection_name: str, collection_schema: StructType
+    def get_db_obj_df(
+        self, obj_name: str, obj_schema: StructType
     ) -> DataFrame:
         return (
             self.spark.read.format("com.mongodb.spark.sql.DefaultSource")
-            .schema(collection_schema)
-            .option("collection", collection_name)
+            .schema(obj_schema)
+            .option("collection", obj_name)
             .load()
         )
 
 
-class MinioDataLoader:
+class DataExtractor:
 
-    def __init__(self, minio_ip: str):
-        self.minio_uri = f"http://{minio_ip}:9000"
+    def __init__(
+        self, temp_dir_path: str, spark_extractor: PySparkDataExtractor
+    ):
+        assert Path(temp_dir_path).exists()
+        self.temp_dir_path = temp_dir_path
+        self.spark_extractor = spark_extractor
 
-    def start_spark_connection(
-        self,
-        spark_session_name: str,
-        access_key: str,
-        secret_key: str,
-        spark_ip: str = "localhost",
-    ) -> None:
+    def get_data_from_db(self) -> List[Path]:
 
-        self.spark = (
-            SparkSession.builder.appName("MinIO Example")
-            .master(f"spark://172.18.0.7:7077")
-            .config(
-                "spark.jars.packages",
-                "aws-java-sdk-1.7.4.jar,hadoop-aws-2.7.3",
+        results_paths = []
+        for collection in self.spark_extractor.db_objects:
+            spark_df: DataFrame = self.spark_extractor.get_db_obj_df(
+                collection, COLLECTIONS_SCHEMAS[collection]
             )
-            .config("fs.s3a.access.key", "dFt5CwCHLkt2TFZljPE3")
-            .config(
-                "fs.s3a.secret.key",
-                "EIuXhLFuaX8KQw3WLPMXm1NUEweyf8dTamURgYav",
+            path = self.temp_dir_path + f"/{collection}.csv.gz"
+            spark_df.toPandas().to_csv(
+                path, index=False, compression="gzip"
             )
-            .config(
-                "spark.hadoop.fs.s3a.endpoint", "http://172.18.0.3:9000"
-            )
-            .getOrCreate()
-        )
-
-    def get_spark_dataframe(
-        self, dataframe: PandasDataFrame, schema: StructType
-    ) -> DataFrame:
-        dataframe["iata_name"] = dataframe["iata_name"].astype(str)
-        dataframe["name"] = dataframe["name"].astype(str)
-        dataframe["_id"] = dataframe["_id"].apply(lambda x: x["oid"])
-        return self.spark.createDataFrame(dataframe, schema)
-
-    def stop_spark_connection(self) -> None:
-        self.spark.stop()
-
-    def write_data_to_bucket(
-        self, df: DataFrame, output_path: str, mode: str = "overwrite"
-    ) -> None:
-        df.write.parquet(output_path, mode=mode)
+            results_paths.append(path)
+        return results_paths

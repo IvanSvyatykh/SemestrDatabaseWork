@@ -54,7 +54,7 @@ __flights = StructType(
         StructField("arrival_airport_id", StringType(), False),
         StructField("departure_airport_id", StringType(), False),
         StructField("schedule_id", StringType(), False),
-        StructField("info", MapType(), False),
+        StructField("info", StringType(), False),
     ]
 )
 
@@ -63,7 +63,7 @@ __passengers = StructType(
         StructField("_id", StringType(), False),
         StructField("name", StringType(), False),
         StructField("surname", StringType(), False),
-        StructField("passport", MapType(), False),
+        StructField("passport", StringType(), False),
     ]
 )
 
@@ -125,5 +125,6 @@ COLLECTIONS_SCHEMAS = {
     "schedules": __schedules,
     "seat_classes": __seat_classes,
     "statuses": __statuses,
+    "statuses_info": __statuses_info,
     "tickets": __tickets,
 }

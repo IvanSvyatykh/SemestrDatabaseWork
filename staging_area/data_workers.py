@@ -43,9 +43,12 @@ class MongoDbExtractractor:
     def stop_spark_connection(self) -> None:
         self.spark.stop()
 
-    def get_df_from_collection(self, collection_name: str) -> DataFrame:
+    def get_df_from_collection(
+        self, collection_name: str, collection_schema: StructType
+    ) -> DataFrame:
         return (
             self.spark.read.format("com.mongodb.spark.sql.DefaultSource")
+            .schema(collection_schema)
             .option("collection", collection_name)
             .load()
         )

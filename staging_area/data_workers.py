@@ -1,13 +1,33 @@
 import abc
+import datetime
+import gzip
+from io import BytesIO
+import json
+import sys
+
+from minio import Minio
+
+
 from pathlib import Path
+import pandas as pd
 import pymongo
 from typing import List
 from pyspark.sql.types import StructType
 from pyspark.sql import SparkSession, DataFrame
 from spark_df_schemas import COLLECTIONS_SCHEMAS
 
+sys.path.append("..")
+from config.config import (
+    MONGODB_USERNAME,
+    MONGODB_PASSWORD,
+    MONGODB_PORT,
+    MONGODB_DOMAIN,
+    MINIO_ACCESS_KEY,
+    MINIO_SECRET_KEY,
+)
 
-class PySparkDataExtractor(abc.ABC):
+
+class PySparkDataWorker(abc.ABC):
 
     @abc.abstractmethod
     def start_spark_connection(
@@ -31,7 +51,7 @@ class PySparkDataExtractor(abc.ABC):
         pass
 
 
-class MongoDbExtractractor(PySparkDataExtractor):
+class MongoDbExtractractor(PySparkDataWorker):
 
     def __init__(
         self,
@@ -79,14 +99,27 @@ class MongoDbExtractractor(PySparkDataExtractor):
         )
 
 
-class DataExtractor:
+class DataWorker:
 
     def __init__(
-        self, temp_dir_path: str, spark_extractor: PySparkDataExtractor
+        self,
+        temp_dir_path: Path,
+        spark_extractor: PySparkDataWorker,
+        minio_client: Minio,
     ):
-        assert Path(temp_dir_path).exists()
-        self.temp_dir_path = temp_dir_path
+        assert temp_dir_path.exists()
+        self.__temp_dir_path = temp_dir_path
         self.spark_extractor = spark_extractor
+        self.minio_client = minio_client
+
+    @property
+    def temp_dir_path(self) -> Path:
+        return self.__temp_dir_path
+
+    @temp_dir_path.setter
+    def temp_dir_path(self, new_dir: Path):
+        assert new_dir.exists()
+        self.__temp_dir_path = new_dir
 
     def get_data_from_db(self) -> List[Path]:
 
@@ -95,9 +128,51 @@ class DataExtractor:
             spark_df: DataFrame = self.spark_extractor.get_db_obj_df(
                 collection, COLLECTIONS_SCHEMAS[collection]
             )
-            path = self.temp_dir_path + f"/{collection}.csv.gz"
+            path = self.__temp_dir_path / f"{collection}.csv.gz"
             spark_df.toPandas().to_csv(
                 path, index=False, compression="gzip"
             )
-            results_paths.append(path)
+            results_paths.append(Path(path))
         return results_paths
+
+    def add_data_to_minio(
+        self, paths_to_data: List[Path], bucket_name: str
+    ) -> None:
+
+        if not self.minio_client.bucket_exists(bucket_name):
+            raise ValueError(
+                f"Does not exist's bucket with name {bucket_name}"
+            )
+
+        current_date = datetime.date.today()
+
+        for path in paths_to_data:
+            assert path.exists()
+            self.minio_client.fput_object(
+                bucket_name=bucket_name,
+                object_name=f"{current_date}/{path.name}",
+                file_path=path,
+                content_type="application/csv",
+            )
+            path.unlink()
+
+    def get_data_from_minio(
+        self, prefix: str, bucket_name: str
+    ) -> List[Path]:
+
+        if not self.minio_client.bucket_exists(bucket_name):
+            raise ValueError(
+                f"Does not exist's bucket with name {bucket_name}"
+            )
+
+        minio_files = self.minio_client.list_objects(
+            bucket_name=bucket_name, prefix=prefix, recursive=True
+        )
+
+        for minio_file in minio_files:
+            self.minio_client.fget_object(
+                bucket_name=bucket_name,
+                object_name=minio_file.object_name,
+                file_path=self.__temp_dir_path
+                / minio_file.object_name.split("/")[-1],
+            )

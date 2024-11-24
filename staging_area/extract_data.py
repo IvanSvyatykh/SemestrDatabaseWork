@@ -3,18 +3,8 @@ from pathlib import Path
 import pymongo
 from typing import List
 from pyspark.sql.types import StructType
-
-import sys
 from pyspark.sql import SparkSession, DataFrame
 from spark_df_schemas import COLLECTIONS_SCHEMAS
-
-sys.path.append("..")
-from config.config import (
-    MONGODB_USERNAME,
-    MONGODB_PASSWORD,
-    MONGODB_PORT,
-    MONGODB_DOMAIN,
-)
 
 
 class PySparkDataExtractor(abc.ABC):

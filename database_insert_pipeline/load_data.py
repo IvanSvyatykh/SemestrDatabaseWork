@@ -1,13 +1,9 @@
 import pandas as pd
 from pathlib import Path
 import datetime
-import sys
 
-
-sys.path.append("..")
-
-from database.repository import *
-from database_insert_pipeline.schemas import *
+from mongodb.repository import *
+from schemas import *
 
 
 async def __load_airports(csv_path: Path) -> None:

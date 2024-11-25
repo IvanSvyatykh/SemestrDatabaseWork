@@ -1,8 +1,10 @@
-import os
 from mongoengine import connect
 from mongoengine.connection import disconnect
-from dotenv import dotenv_values
-from config import (
+import sys
+
+sys.path.append("..")
+
+from insert_config import (
     MONGODB_USERNAME,
     MONGODB_PASSWORD,
     MONGODB_PORT,
@@ -19,8 +21,6 @@ class DatabaseConfig:
         if self.db_client is None:
             self.db_client = connect(
                 db=db_name,
-                # username=self.config["MONGO_INITDB_ROOT_USERNAME"],
-                # password=self.config["MONGO_INITDB_ROOT_PASSWORD"],
                 host=self.url,
                 alias="airport",
             )

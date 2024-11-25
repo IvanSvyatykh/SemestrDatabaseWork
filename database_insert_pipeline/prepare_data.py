@@ -215,7 +215,7 @@ def __prepare_tickets(path_to_csv: Path, path_to_res_dir: Path) -> None:
     tickets_data["passport_num"] = passenger_id.apply(
         lambda x: x.split(" ")[-1].strip(" ")
     )
-    fare_cond_data = pd.read_csv("../data/normalized/fare_condition.csv")
+    fare_cond_data = pd.read_csv("./data/normalized/fare_condition.csv")
     tickets_data["fare_conditions"] = tickets_data[
         "fare_conditions"
     ].apply(

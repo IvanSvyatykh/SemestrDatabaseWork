@@ -1,28 +1,28 @@
 fare_condition:
-  path: "../data/fare_condition.csv"
-  result_dir: "../data/normalized"
+  path: "./data/fare_condition.csv"
+  result_dir: "./data/normalized"
   depends: []
 passengers:
-  path: "../data/passengers.csv"
-  result_dir: "../data/normalized"
+  path: "./data/passengers.csv"
+  result_dir: "./data/normalized"
   depends: []
 airlines:
-  path : "../data/airlines.csv"
-  result_dir: "../data/normalized"
+  path : "./data/airlines.csv"
+  result_dir: "./data/normalized"
   depends: []
 airports:
-  path: "../data/airports.csv"
-  result_dir: "../data/normalized"
+  path: "./data/airports.csv"
+  result_dir: "./data/normalized"
   depends: []
 aircrafts:
-  path: "../data/aircrafts.csv" 
-  result_dir: "../data/normalized"
+  path: "./data/aircrafts.csv" 
+  result_dir: "./data/normalized"
   depends: []
 flights:
-  path: "../data/flights.csv"
-  result_dir: "../data/normalized"
+  path: "./data/flights.csv"
+  result_dir: "./data/normalized"
   depends: ["airports","aircrafts"]
 tickets:
-  path: "../data/tickets.csv"
-  result_dir: "../data/normalized"
+  path: "./data/tickets.csv"
+  result_dir: "./data/normalized"
   depends: ["flights","passengers","fare_condition"]

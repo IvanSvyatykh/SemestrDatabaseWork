@@ -11,7 +11,7 @@ import yaml
 from pathlib import Path
 from tqdm import tqdm
 
-from database.db_config import DatabaseConfig
+from mongodb.db_config import DatabaseConfig
 from load_data import LOAD_FUNCTIONS
 from prepare_data import FUNCTION
 

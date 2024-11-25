@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import rstr
 import pandas as pd
-from . import config
+from insert_config import DEFAULT_TIMEZONE
 
 
 def __generate_dates_for_flight_num(
@@ -67,7 +67,7 @@ def generate_aircraft_number_history(
     min_year: int,
     airlines: pd.DataFrame,
     max_year: int = 2015,
-    timezone: str = config.DEFAULT_TIMEZONE,
+    timezone: str = DEFAULT_TIMEZONE,
 ) -> pd.DataFrame:
 
     dates = __generate_dates_for_flight_num(min_year, max_year, timezone)

@@ -7,7 +7,7 @@ import sys
 sys.path.append("..")
 
 from database.repository import *
-from src.schemas import *
+from database_insert_pipeline.schemas import *
 
 
 async def __load_airports(csv_path: Path) -> None:

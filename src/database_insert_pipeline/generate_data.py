@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import rstr
 import pandas as pd
-from config import config
+from . import config
 
 
 def __generate_dates_for_flight_num(

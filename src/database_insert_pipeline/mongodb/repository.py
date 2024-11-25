@@ -19,7 +19,7 @@ from .documents import (
     StatusHistoryDocument,
     TicketDocument,
 )
-from src.schemas import (
+from database_insert_pipeline.schemas import (
     Aircraft,
     AircraftNumber,
     Airline,
@@ -37,7 +37,7 @@ from src.schemas import (
 from mongoengine import Q
 from mongoengine.fields import ObjectId
 
-from config import config
+from . import config
 
 MAX_DB_DATETIME = datetime.datetime(
     year=9999,

@@ -17,7 +17,7 @@ from pyspark.sql import SparkSession, DataFrame
 from spark_df_schemas import COLLECTIONS_SCHEMAS
 
 sys.path.append("..")
-from config.config import (
+from config import (
     MONGODB_USERNAME,
     MONGODB_PASSWORD,
     MONGODB_PORT,

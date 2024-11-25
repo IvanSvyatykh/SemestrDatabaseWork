@@ -2,7 +2,7 @@ import os
 from mongoengine import connect
 from mongoengine.connection import disconnect
 from dotenv import dotenv_values
-from config.config import (
+from config import (
     MONGODB_USERNAME,
     MONGODB_PASSWORD,
     MONGODB_PORT,

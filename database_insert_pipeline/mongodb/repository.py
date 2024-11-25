@@ -1,4 +1,3 @@
-from ast import List
 import asyncio
 import datetime
 import re
@@ -19,7 +18,7 @@ from .documents import (
     StatusHistoryDocument,
     TicketDocument,
 )
-from database_insert_pipeline.schemas import (
+from schemas import (
     Aircraft,
     AircraftNumber,
     Airline,
@@ -37,7 +36,7 @@ from database_insert_pipeline.schemas import (
 from mongoengine import Q
 from mongoengine.fields import ObjectId
 
-from . import config
+from insert_config import DEFAULT_TIMEZONE
 
 MAX_DB_DATETIME = datetime.datetime(
     year=9999,
@@ -46,7 +45,7 @@ MAX_DB_DATETIME = datetime.datetime(
     hour=23,
     minute=59,
     second=59,
-    tzinfo=ZoneInfo(config.DEFAULT_TIMEZONE),
+    tzinfo=ZoneInfo(DEFAULT_TIMEZONE),
 )
 
 

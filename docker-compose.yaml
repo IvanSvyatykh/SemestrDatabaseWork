@@ -50,6 +50,53 @@ services:
       - minio_data:/data/s3
     command: server /data/s3 --console-address ":9001"
 
+  postgres:
+    container_name: postgres
+    image: postgres:17
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - .\postgres_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    container_name: airflow-webserver
+    image: apache/airflow:2.1.2
+    restart: always
+    entrypoint: airflow webserver
+    env_file:
+      - .env
+    ports:
+      - "8083:${AIRFLOW_PORT}"
+    volumes:
+      - .\dags:/opt/airflow/dags
+    depends_on:
+      - postgres
+      - airflow-scheduler
+
+  airflow-scheduler:
+    container_name: airflow-scheduler
+    image: apache/airflow:2.1.2
+    restart: always
+    entrypoint: airflow scheduler
+    env_file:
+      - .env
+    volumes:
+      - .\dags:/opt/airflow/dags
+    depends_on:
+      - postgres
+
+  airflow-init:
+    container_name: airflow-init
+    image: apache/airflow:2.1.2
+    entrypoint: /bin/bash -c "airflow db init && airflow users create ${AIRFLOW_USER}"
+    env_file:
+      - .env
+    volumes:
+      - .\dags:/opt/airflow/dags
+    depends_on:
+      - postgres
 volumes:
   mongo_data:
   minio_data:

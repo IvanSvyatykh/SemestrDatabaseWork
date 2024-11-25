@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.11,<3.13"
 pymongo = {extras = ["srv"], version = "^4.10.1"}
 mongoengine = "^0.29.1"
 pandas = "^2.2.3"
@@ -27,6 +27,7 @@ grpcio-status = "^1.67.1"
 boto3 = "^1.35.66"
 aws-hadoop = "^1.0.dev2"
 minio = "^7.2.11"
+apache-airflow = "^2.10.3"
 
 
 [tool.poetry.group.dev.dependencies]

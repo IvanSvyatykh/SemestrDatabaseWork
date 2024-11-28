@@ -1,30 +1,14 @@
 import abc
 import datetime
-import gzip
-from io import BytesIO
-import json
-import sys
-
 from minio import Minio
 
 
 from pathlib import Path
-import pandas as pd
 import pymongo
 from typing import List
 from pyspark.sql.types import StructType
 from pyspark.sql import SparkSession, DataFrame
-from spark_df_schemas import COLLECTIONS_SCHEMAS
-
-sys.path.append("..")
-from config import (
-    MONGODB_USERNAME,
-    MONGODB_PASSWORD,
-    MONGODB_PORT,
-    MONGODB_DOMAIN,
-    MINIO_ACCESS_KEY,
-    MINIO_SECRET_KEY,
-)
+from utils.spark_df_schemas import COLLECTIONS_SCHEMAS
 
 
 class PySparkDataWorker(abc.ABC):

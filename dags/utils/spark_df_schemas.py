@@ -4,7 +4,6 @@ from pyspark.sql.types import (
     StringType,
     DateType,
     IntegerType,
-    MapType,
     BooleanType,
 )
 

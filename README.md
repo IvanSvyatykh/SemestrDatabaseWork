@@ -87,6 +87,5 @@
 - `cd ./data`
 - `unzip db_semest_job_data.zip`
 - `cd ..`
-- `cd ./database_insert_pipeline`
-- Ввести команду в консоль `python insert_script.py -c config.yaml -rs <some_int>`
+- Ввести команду в консоль `python database_insert_pipeline/insert_script.py -c database_insert_pipeline/config.yaml -rs <some_int>`
 

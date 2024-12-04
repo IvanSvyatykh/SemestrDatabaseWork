@@ -35,61 +35,36 @@ default_args = {
 )
 def extract_dag():
 
-    spark_session_name = ("ETL_pipeline",)
-    temp_dir_path = ("data/spark_temp",)
-    bucket_name = ("test",)
-    spark_ip = ("172.18.0.5",)
+    spark_session_name = "ETL_extract"
+    temp_dir_path = Path("./data")
+    bucket_name = "test"
+    spark_ip = "spark-master"
 
-    @task(multiple_outputs=True)
-    def start_spark_session(
-        spark_session_name: str, spark_ip: str, db_name: str
-    ) -> MongoDbExtractractor:
-
-        extractor = MongoDbExtractractor(
-            db_username=MONGODB_USERNAME,
-            db_password=MONGODB_PASSWORD,
-            db_domain=MONGODB_DOMAIN,
-            db_name=db_name,
-            db_port=MONGODB_PORT,
-        )
-        extractor.start_spark_connection(
+    @task()
+    def get_data_from_mongo(
+        data_worker: DataWorker, spark_session_name: str, spark_ip
+    ) -> List[str]:
+        data_worker.start_extractor(
             spark_session_name=spark_session_name, spark_ip=spark_ip
         )
-
-        return extractor
-
-    @task(multiple_outputs=True)
-    def create_data_worker(
-        extractor: MongoDbExtractractor,
-        minio_client: Minio,
-        temp_dir_path: Path,
-    ) -> DataWorker:
-        temp_dir_path.mkdir(exist_ok=True)
-        data_worker = DataWorker(
-            temp_dir_path=temp_dir_path,
-            spark_extractor=extractor,
-            minio_client=minio_client,
-        )
-        return data_worker
-
-    @task(multiple_outputs=True)
-    def get_data_from_mongo(data_worker: DataWorker) -> List[Path]:
         return data_worker.get_data_from_db()
 
-    @task(multiple_outputs=True)
+    @task()
     def load_data_to_minio(
         data_worker: DataWorker,
-        paths_to_data: List[Path],
+        paths_to_data: List[str],
         bucket_name: str,
     ):
         data_worker.add_data_to_minio(
             paths_to_data=paths_to_data, bucket_name=bucket_name
         )
 
-    extractor = start_spark_session(
-        spark_session_name=spark_session_name,
-        spark_ip=spark_ip,
+    extractor = MongoDbExtractractor(
+        db_username=MONGODB_USERNAME,
+        db_password=MONGODB_PASSWORD,
+        db_domain=MONGODB_DOMAIN,
         db_name="airport",
+        db_port=MONGODB_PORT,
     )
     minio_client = Minio(
         endpoint=MINIO_ENDPOINT,
@@ -97,18 +72,23 @@ def extract_dag():
         secret_key=MINIO_SECRET_KEY,
         secure=False,
     )
-    data_worker = create_data_worker(
-        extractor=extractor,
-        minio_client=minio_client,
+    temp_dir_path.mkdir(exist_ok=True)
+    data_worker = DataWorker(
         temp_dir_path=temp_dir_path,
+        spark_extractor=extractor,
+        minio_client=minio_client,
     )
-    paths_to_data = get_data_from_mongo(data_worker=data_worker)
+    paths_to_data = get_data_from_mongo(
+        data_worker=data_worker,
+        spark_session_name=spark_session_name,
+        spark_ip=spark_ip,
+    )
     load_to_minio = load_data_to_minio(
         data_worker=data_worker,
         paths_to_data=paths_to_data,
         bucket_name=bucket_name,
     )
-    extractor >> data_worker >> paths_to_data >> load_to_minio
+    paths_to_data >> load_to_minio
 
 
 dag = extract_dag()

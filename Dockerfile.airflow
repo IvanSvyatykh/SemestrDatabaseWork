@@ -1,6 +1,14 @@
 FROM apache/airflow:2.10.2
 
-USER airflow
 
+USER root
+RUN apt-get update \
+    && apt install -y default-jdk && \
+    apt-get autoremove -yqq && \
+    apt-get clean
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+RUN export JAVA_HOME
+USER airflow
 COPY ./dags/requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

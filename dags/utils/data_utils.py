@@ -15,7 +15,7 @@ class PySparkDataWorker(abc.ABC):
 
     @abc.abstractmethod
     def start_spark_connection(
-        self, park_session_name: str, spark_ip: str = "localhost"
+        self, spark_session_name: str, spark_ip: str = "localhost"
     ):
         pass
 
@@ -96,6 +96,11 @@ class DataWorker:
         self.spark_extractor = spark_extractor
         self.minio_client = minio_client
 
+    def start_extractor(self, spark_session_name: str, spark_ip: str):
+        self.spark_extractor.start_spark_connection(
+            spark_ip=spark_ip, spark_session_name=spark_session_name
+        )
+
     @property
     def temp_dir_path(self) -> Path:
         return self.__temp_dir_path
@@ -105,7 +110,7 @@ class DataWorker:
         assert new_dir.exists()
         self.__temp_dir_path = new_dir
 
-    def get_data_from_db(self) -> List[Path]:
+    def get_data_from_db(self) -> List[str]:
 
         results_paths = []
         for collection in self.spark_extractor.db_objects:
@@ -116,11 +121,11 @@ class DataWorker:
             spark_df.toPandas().to_csv(
                 path, index=False, compression="gzip"
             )
-            results_paths.append(Path(path))
+            results_paths.append(str(path))
         return results_paths
 
     def add_data_to_minio(
-        self, paths_to_data: List[Path], bucket_name: str
+        self, paths_to_data: List[str], bucket_name: str
     ) -> None:
 
         if not self.minio_client.bucket_exists(bucket_name):
@@ -131,14 +136,15 @@ class DataWorker:
         current_date = datetime.date.today()
 
         for path in paths_to_data:
-            assert path.exists()
+            temp_path = Path(path)
+            assert temp_path.exists()
             self.minio_client.fput_object(
                 bucket_name=bucket_name,
-                object_name=f"{current_date}/{path.name}",
+                object_name=f"{current_date}/{temp_path.name}",
                 file_path=path,
                 content_type="application/csv",
             )
-            path.unlink()
+            temp_path.unlink()
 
     def get_data_from_minio(
         self, prefix: str, bucket_name: str

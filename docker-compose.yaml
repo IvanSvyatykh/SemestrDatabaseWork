@@ -9,6 +9,8 @@ services:
       - ${MONGODB_PORT}:${MONGODB_PORT}
     volumes:
       - /data/mongo
+    networks:
+      - spark-network
 
   mongo-express:
     image: mongo-express
@@ -16,27 +18,35 @@ services:
       - .env
     depends_on:
       - mongo
+    networks:
+      - spark-network
     ports:
       - ${MONGOEXPRESS_PORT}:${MONGOEXPRESS_PORT}
 
-  spark:
-    image: docker.io/bitnami/spark:3.5
+  spark-master:
+    image: bitnami/spark:latest
     environment:
       - SPARK_MODE=master
+    env_file:
+      - .env
     ports:
-      - "4040:4040"
-      - "8080:8080"
+      - "8090:8080"
+      - "7077:7077"
+    networks:
+      - spark-network
     depends_on:
       - mongo
 
   spark-worker:
-    image: docker.io/bitnami/spark:3.5
+    image: bitnami/spark:latest
     environment:
       - SPARK_MODE=worker
     env_file:
       - .env
+    networks:
+      - spark-network
     depends_on:
-      - spark
+      - spark-master
 
   minio:
     image: minio/minio:latest
@@ -48,6 +58,8 @@ services:
       - ${MINIO_WEB_UI_PORT}:9001 # MinIO Web UI
     volumes:
       - minio_data:/data/s3
+    networks:
+      - spark-network
     command: server /data/s3 --console-address ":9001"
 
   postgres:
@@ -57,12 +69,16 @@ services:
       - .env
     ports:
       - "${POSTGRES_PORT}:5432"
+    networks:
+      - spark-network
     volumes:
-      - .\postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   airflow-webserver:
     container_name: airflow-webserver
-    image: apache/airflow:2.1.2
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     restart: always
     entrypoint: airflow webserver
     env_file:
@@ -70,33 +86,63 @@ services:
     ports:
       - "8083:${AIRFLOW_PORT}"
     volumes:
-      - .\dags:/opt/airflow/dags
+      - ./dags:/opt/airflow/dags
+    networks:
+      - spark-network
     depends_on:
       - postgres
       - airflow-scheduler
 
   airflow-scheduler:
     container_name: airflow-scheduler
-    image: apache/airflow:2.1.2
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     restart: always
     entrypoint: airflow scheduler
     env_file:
       - .env
     volumes:
-      - .\dags:/opt/airflow/dags
+      - ./dags:/opt/airflow/dags
+    networks:
+      - spark-network
     depends_on:
       - postgres
 
   airflow-init:
     container_name: airflow-init
-    image: apache/airflow:2.1.2
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     entrypoint: /bin/bash -c "airflow db init && airflow users create ${AIRFLOW_USER}"
     env_file:
       - .env
     volumes:
-      - .\dags:/opt/airflow/dags
+      - ./dags:/opt/airflow/dags
+    networks:
+      - spark-network
     depends_on:
       - postgres
+
+  cassandra:
+    image: docker.io/bitnami/cassandra:5.0
+    ports:
+      - '7000:7000'
+      - '9042:9042'
+    environment:
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_SEEDS=cassandra
+      - CASSANDRA_PASSWORD_SEEDER=yes
+      - CASSANDRA_PASSWORD=cassandra
+    networks:
+      - spark-network
+
 volumes:
   mongo_data:
   minio_data:
+  postgres_data:
+
+
+networks:
+  spark-network:
+    driver: bridge

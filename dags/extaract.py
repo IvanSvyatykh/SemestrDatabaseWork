@@ -75,7 +75,7 @@ def extract_dag():
     temp_dir_path.mkdir(exist_ok=True)
     data_worker = DataWorker(
         temp_dir_path=temp_dir_path,
-        spark_extractor=extractor,
+        spark_worker=extractor,
         minio_client=minio_client,
     )
     paths_to_data = get_data_from_mongo(

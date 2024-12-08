@@ -11,10 +11,10 @@ from pyspark.sql import SparkSession, DataFrame
 from utils.spark_df_schemas import COLLECTIONS_SCHEMAS
 
 
-class PySparkDataWorker(abc.ABC):
+class PySparkDataExtractor(abc.ABC):
 
     @abc.abstractmethod
-    def start_spark_connection(
+    def start_spark_session(
         self, spark_session_name: str, spark_ip: str = "localhost"
     ):
         pass
@@ -25,7 +25,7 @@ class PySparkDataWorker(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def stop_spark_connection(self):
+    def stop_spark_session(self):
         pass
 
     @abc.abstractmethod
@@ -35,7 +35,7 @@ class PySparkDataWorker(abc.ABC):
         pass
 
 
-class MongoDbExtractractor(PySparkDataWorker):
+class MongoDbExtractractor(PySparkDataExtractor):
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class MongoDbExtractractor(PySparkDataWorker):
     def db_objects(self) -> List[str]:
         return self.__db_objects
 
-    def start_spark_connection(
+    def start_spark_session(
         self, spark_session_name: str, spark_ip: str = "localhost"
     ) -> None:
         self.spark: SparkSession = (
@@ -69,7 +69,7 @@ class MongoDbExtractractor(PySparkDataWorker):
             .getOrCreate()
         )
 
-    def stop_spark_connection(self) -> None:
+    def stop_spark_session(self) -> None:
         self.spark.stop()
 
     def get_db_obj_df(
@@ -88,16 +88,16 @@ class DataWorker:
     def __init__(
         self,
         temp_dir_path: Path,
-        spark_extractor: PySparkDataWorker,
+        spark_worker: PySparkDataExtractor,
         minio_client: Minio,
     ):
         assert temp_dir_path.exists()
         self.__temp_dir_path = temp_dir_path
-        self.spark_extractor = spark_extractor
+        self.__spark_worker = spark_worker
         self.minio_client = minio_client
 
     def start_extractor(self, spark_session_name: str, spark_ip: str):
-        self.spark_extractor.start_spark_connection(
+        self.__spark_worker.start_spark_session(
             spark_ip=spark_ip, spark_session_name=spark_session_name
         )
 
@@ -113,8 +113,8 @@ class DataWorker:
     def get_data_from_db(self) -> List[str]:
 
         results_paths = []
-        for collection in self.spark_extractor.db_objects:
-            spark_df: DataFrame = self.spark_extractor.get_db_obj_df(
+        for collection in self.__spark_worker.db_objects:
+            spark_df: DataFrame = self.__spark_worker.get_db_obj_df(
                 collection, COLLECTIONS_SCHEMAS[collection]
             )
             path = self.__temp_dir_path / f"{collection}.csv.gz"
@@ -159,10 +159,17 @@ class DataWorker:
             bucket_name=bucket_name, prefix=prefix, recursive=True
         )
 
+        paths = []
+
         for minio_file in minio_files:
+            paths.append(
+                self.__temp_dir_path
+                / minio_file.object_name.split("/")[-1]
+            )
             self.minio_client.fget_object(
                 bucket_name=bucket_name,
                 object_name=minio_file.object_name,
                 file_path=self.__temp_dir_path
                 / minio_file.object_name.split("/")[-1],
             )
+        return paths

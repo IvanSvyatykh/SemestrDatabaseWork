@@ -1,6 +1,5 @@
-from ast import Dict
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from pyspark.sql.functions import md5, concat_ws
 from pyspark.sql.types import StructType
 from pyspark.sql import SparkSession, DataFrame
@@ -17,7 +16,7 @@ __BUSINESS_KEY_COLUMNS_NAME = {
     "schedules": ["_id"],
     "seat_classes": ["fare_conditions"],
     "statuses": ["status"],
-    "statuses_info": ["_id", "schedule_id "],
+    "statuses_info": ["_id", "schedule_id"],
     "tickets": ["number"],
 }
 
@@ -31,7 +30,7 @@ def get_path_columns_dict(
 
         file_name = path.stem.split(".")[0]
         if file_name in __BUSINESS_KEY_COLUMNS_NAME:
-            result[path] = __BUSINESS_KEY_COLUMNS_NAME[path]
+            result[path] = __BUSINESS_KEY_COLUMNS_NAME[file_name]
     return result
 
 

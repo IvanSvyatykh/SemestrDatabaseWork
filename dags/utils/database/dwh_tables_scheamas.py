@@ -350,12 +350,14 @@ class AirportsLink:
         load_date: datetime,
         record_source: str,
         flight_hash: str,
-        airport_hash: str,
+        arrival_airport_hash: str,
+        departure_airport_hash: str,
     ):
         self.__load_date = load_date
         self.__record_source = record_source
         self.__flight_hash = flight_hash
-        self.__airport_hash = airport_hash
+        self.__arrival_airport_hash = arrival_airport_hash
+        self.__departure_airport_hash = departure_airport_hash
 
     @property
     def load_date(self) -> str:
@@ -370,8 +372,12 @@ class AirportsLink:
         return self.__flight_hash
 
     @property
-    def airport_hash(self) -> str:
-        return self.__airport_hash
+    def arrival_airport_hash(self) -> str:
+        return self.__arrival_airport_hash
+
+    @property
+    def departure_airport_hash(self) -> str:
+        return self.__departure_airport_hash
 
 
 class AircraftNumsLink:

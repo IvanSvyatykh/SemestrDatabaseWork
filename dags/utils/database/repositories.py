@@ -180,7 +180,7 @@ class AirlinesHubRepositoty:
     __name = "airlines_hub"
 
     def insert(self, airline: AirlinesHub) -> str:
-        return f"""INSERT INTO {self.__name} (passengers_hash_key, load_date, record_source,icao_name,name)
+        return f"""INSERT INTO {self.__name} (airlines_hash_key, load_date, record_source,icao_name,name)
                 VALUES ({airline.airline_hash}, 
                 {airline.load_date}, 
                 {airline.record_source},
@@ -267,8 +267,9 @@ class AirportsLinkRepositoty:
     __name = "airports_link"
 
     def insert(self, airports_link: AirportsLink) -> str:
-        return f"""INSERT INTO {self.__name} (airport_hash_key, load_date, record_source,flight_hash_key)
-                VALUES ({airports_link.airport_hash}, 
+        return f"""INSERT INTO {self.__name} (arrival_airport_hash_key,departure_airport_hash_key, load_date, record_source,flight_hash_key)
+                VALUES ({airports_link.arrival_airport_hash}, 
+                {airports_link.departure_airport_hash},
                 {airports_link.load_date}, 
                 {airports_link.record_source},
                 {airports_link.flight_hash});
@@ -276,7 +277,8 @@ class AirportsLinkRepositoty:
 
     def create_table(self) -> str:
         return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
-                airport_hash_key varchar(32),
+                arrival_airport_hash_key varchar(32),
+                departure_airport_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
                 flight_hash_key varchar(32));

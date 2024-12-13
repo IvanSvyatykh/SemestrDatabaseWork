@@ -62,12 +62,10 @@ class FlightsHub:
         load_date: datetime,
         record_source: str,
         flights_hash: str,
-        flight_num: str,
     ):
         self.__load_date = load_date
         self.__record_source = record_source
         self.__flights_hash = flights_hash
-        self.__flight_num = flight_num
 
     @property
     def load_date(self) -> str:
@@ -80,10 +78,6 @@ class FlightsHub:
     @property
     def flights_hash(self) -> str:
         return self.__flights_hash
-
-    @property
-    def flight_num(self) -> str:
-        return self.__flight_num
 
 
 class AirportsHub:

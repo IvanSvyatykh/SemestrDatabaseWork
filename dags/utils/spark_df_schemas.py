@@ -2,7 +2,7 @@ from pyspark.sql.types import (
     StructType,
     StructField,
     StringType,
-    DateType,
+    TimestampType,
     IntegerType,
     BooleanType,
 )
@@ -13,8 +13,8 @@ __aircraft_ids = StructType(
         StructField("aircraft_id", StringType(), False),
         StructField("aircraft_num", StringType(), False),
         StructField("airline_id", StringType(), False),
-        StructField("registration_time", DateType(), False),
-        StructField("deregistartion_time", DateType(), False),
+        StructField("registration_time", TimestampType(), False),
+        StructField("deregistartion_time", TimestampType(), False),
     ]
 )
 
@@ -69,10 +69,10 @@ __passengers = StructType(
 __schedules = StructType(
     [
         StructField("_id", StringType(), False),
-        StructField("arrival_time", DateType(), False),
-        StructField("departure_time", DateType(), False),
-        StructField("actual_arrival", DateType(), False),
-        StructField("actual_departure", DateType(), False),
+        StructField("arrival_time", TimestampType(), False),
+        StructField("departure_time", TimestampType(), False),
+        StructField("actual_arrival", TimestampType(), False),
+        StructField("actual_departure", TimestampType(), False),
     ]
 )
 
@@ -95,8 +95,8 @@ __statuses_info = StructType(
         StructField("_id", StringType(), False),
         StructField("status_id", StringType(), False),
         StructField("schedule_id", StringType(), False),
-        StructField("set_status_time", DateType(), False),
-        StructField("unset_status_time", DateType(), False),
+        StructField("set_status_time", TimestampType(), False),
+        StructField("unset_status_time", TimestampType(), False),
     ]
 )
 

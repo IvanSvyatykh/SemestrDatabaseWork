@@ -9,6 +9,8 @@ from pyspark.sql.types import (
     StructType,
     StructField,
     StringType,
+    BooleanType,
+    TimestampType,
 )
 
 __BUSINESS_KEY_COLUMNS_NAME = {
@@ -135,7 +137,60 @@ TABLES_COLUMNS = {
         "arrival_airport_hash_key",
         "departure_airport_hash_key",
     ],
-    "flights_hub": ["load_date", "record_source", "flights_hash_key"],
+    "flights_hub": [
+        "load_date",
+        "record_source",
+        "flights_hash_key",
+    ],
+    "passenger_flights_sat": [
+        "load_date",
+        "record_source",
+        "flights_hash_key",
+        "registration_time",
+        "is_ramp",
+        "gate",
+        "flight_number",
+    ],
+    "schedules_sat": [
+        "load_date",
+        "record_source",
+        "schedules_hash_key",
+        "arrival_time",
+        "departure_time",
+        "actual_arrival",
+        "actual_departure",
+    ],
+    "schedules_hub": [
+        "load_date",
+        "record_source",
+        "schedules_hash_key",
+    ],
+    "schedules_link": [
+        "load_date",
+        "record_source",
+        "schedules_hash_key",
+        "flights_hash_key",
+    ],
+    "statuses_hub": [
+        "load_date",
+        "record_source",
+        "status_hash_key",
+        "status",
+    ],
+    "status_infos_sat": [
+        "load_date",
+        "record_source",
+        "status_info_hash_key",
+        "set_status_time",
+        "unset_status_time",
+    ],
+    "statuses_info_link": [
+        "load_date",
+        "record_source",
+        "status_info_hash_key",
+        "status_hash_key",
+        "schedules_hash_key",
+    ],
 }
 
 
@@ -487,13 +542,132 @@ class FlightsTransformer:
         ).withColumnRenamed("hash_key", "flights_hash_key")
 
         flights_hub_path = self.__flights_file.parent / "flights_hub.csv"
-        lights_sat_path = self.__flights_file.parent / "flights_sat.csv"
+        flights_sat_path = self.__flights_file.parent / "flights_sat.csv"
         flights_df[TABLES_COLUMNS["flights_hub"]].toPandas().to_csv(
             flights_hub_path, index=False
         )
+        flights_df[
+            TABLES_COLUMNS["passenger_flights_sat"]
+        ].toPandas().to_csv(flights_sat_path, index=False)
         return {
             "flights_hub_path": flights_hub_path,
-            "lights_sat_path": lights_sat_path,
+            "lights_sat_path": flights_sat_path,
+        }
+
+
+class SchedulesTransformer:
+    def __init__(self, flights_file: Path, schedules_file: Path):
+        assert flights_file.exists()
+        assert schedules_file.exists()
+        self.__flights_file = flights_file
+        self.__schedules_file = schedules_file
+
+    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+        schedules_df: DataFrame = spark_session.read.csv(
+            str(self.__schedules_file), sep=",", header=True
+        ).withColumnRenamed("hash_key", "schedules_hash_key")
+        flights_df: DataFrame = spark_session.read.csv(
+            str(self.__flights_file), sep=",", header=True
+        ).withColumnsRenamed(
+            {
+                "hash_key": "flights_hash_key",
+                "load_date": "flights_load_date",
+                "record_source": "flights_record_source",
+            }
+        )
+        schedules_sat_path = (
+            self.__flights_file.parent / "schedules_sat.csv"
+        )
+        schedules_link_path = (
+            self.__flights_file.parent / "schedules_link.csv"
+        )
+        schedules_hub_path = (
+            self.__flights_file.parent / "schedules_hub.csv"
+        )
+        schedules_df[TABLES_COLUMNS["schedules_sat"]].toPandas().to_csv(
+            schedules_sat_path, index=False
+        )
+        schedules_df[TABLES_COLUMNS["schedules_hub"]].toPandas().to_csv(
+            schedules_hub_path, index=False
+        )
+        flights_df.join(
+            schedules_df,
+            on=[schedules_df._id == flights_df.schedule_id],
+            how="inner",
+        )[TABLES_COLUMNS["schedules_sat"]].toPandas().to_csv(
+            schedules_sat_path, index=False
+        )
+
+        return {
+            "schedules_sat_path": schedules_sat_path,
+            "schedules_link_path": schedules_link_path,
+            "schedules_hub_path": schedules_hub_path,
+        }
+
+
+class StatusInfoTransformer:
+    def __init__(
+        self,
+        status_info_file: Path,
+        schedules_file: Path,
+        status_file: Path,
+    ):
+        assert status_info_file.exists()
+        assert schedules_file.exists()
+        assert status_file.exists()
+        self.__status_info_file = status_info_file
+        self.__schedules_file = schedules_file
+        self.__status_file = status_file
+
+    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+        schedules_df: DataFrame = spark_session.read.csv(
+            str(self.__schedules_file), sep=",", header=True
+        ).withColumnsRenamed(
+            {
+                "hash_key": "schedules_hash_key",
+                "load_date": "schedules_load_date",
+                "record_source": "schedules_record_source",
+            }
+        )
+        status_df: DataFrame = spark_session.read.csv(
+            str(self.__status_file), sep=",", header=True
+        ).withColumnRenamed("hash_key", "status_hash_key")
+        status_info_df: DataFrame = spark_session.read.csv(
+            str(self.__status_info_file), sep=",", header=True
+        ).withColumnRenamed("hash_key", "status_info_hash_key")
+
+        status_info_sat_path = (
+            self.__status_info_file.parent / "status_info_sat.csv"
+        )
+        status_info_link_path = (
+            self.__status_info_file.parent / "status_info_link.csv"
+        )
+        status_info_hub_path = (
+            self.__status_info_file.parent / "status_info_hub.csv"
+        )
+        status_df[TABLES_COLUMNS["statuses_hub"]].toPandas().to_csv(
+            status_info_hub_path, index=False
+        )
+        status_info_df[
+            TABLES_COLUMNS["status_infos_sat"]
+        ].toPandas().to_csv(status_info_sat_path, index=False)
+        status_info_df.join(
+            schedules_df.select(col("_id"), col("schedules_hash_key")),
+            on=[schedules_df._id == status_info_df.schedule_id],
+            how="inner",
+        ).join(
+            status_df.select(col("_id"), col("status_hash_key")),
+            on=[status_df._id == status_info_df.status_id],
+            how="inner",
+        )[
+            TABLES_COLUMNS["statuses_info_link"]
+        ].toPandas().to_csv(
+            status_info_link_path, index=False
+        )
+        return {
+            "status_info_sat_path": status_info_sat_path,
+            "status_info_link_path": status_info_link_path,
+            "status_info_hub_path": status_info_hub_path,
         }
 
 
@@ -514,6 +688,26 @@ class PySparkDataTransformer:
             # .master(f"spark://{self.__spark_ip}:7077")
             .getOrCreate()
         )
+
+    def transform_flight_info_to_columns(self, file_path: Path) -> None:
+        assert file_path.exists()
+        df: DataFrame = self.__spark.read.csv(
+            str(file_path), sep=",", header=True, escape='"'
+        )
+        schema = StructType(
+            [
+                StructField("gate", StringType(), False),
+                StructField("is_ramp", BooleanType(), False),
+                StructField("registration_time", TimestampType(), False),
+            ]
+        )
+        passenger_flight_df = df.withColumn(
+            "jsonData",
+            from_json(col("info"), schema),
+        ).select(col("_id"), "jsonData.*")
+        df = passenger_flight_df.join(df, on=["_id"], how="inner")
+        df = df.drop("info")
+        df.toPandas().to_csv(file_path, index=False)
 
     def trasform_passport_to_columns(self, file_path: Path) -> None:
         assert file_path.exists()

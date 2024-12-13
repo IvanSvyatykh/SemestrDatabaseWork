@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Dict
 from pyspark.sql.functions import md5, concat_ws
@@ -13,7 +13,8 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
-__BUSINESS_KEY_COLUMNS_NAME = {
+
+FILES_TRANSFORMER = {
     "aircraft_ids": ["aircraft_num"],
     "aircrafts": ["iata_name", "name"],
     "airlines": ["name", "icao_name"],
@@ -202,20 +203,26 @@ def get_path_columns_dict(
     for path in paths_to_files:
 
         file_name = path.stem.split(".")[0]
-        if file_name in __BUSINESS_KEY_COLUMNS_NAME:
-            result[path] = __BUSINESS_KEY_COLUMNS_NAME[file_name]
+        if file_name in FILES_TRANSFORMER:
+            result[path] = FILES_TRANSFORMER[file_name]
     return result
 
 
-class AircraftsTransformer:
+class AbstractCsvTableTransformer(ABC):
 
-    def __init__(self, aircraft_file: Path, flight_file: Path):
-        assert aircraft_file.exists()
-        assert flight_file.exists()
-        self.__aircraft_file = aircraft_file
-        self.__flight_file = flight_file
+    @abstractmethod
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
+        pass
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+
+class AircraftsTransformer(AbstractCsvTableTransformer):
+
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__aircraft_file = spark_dir / "aircrafts.csv.gz"
+        self.__flight_file = spark_dir / "flights.csv.gz"
+
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         aircraft_df: DataFrame = spark_session.read.csv(
             str(self.__aircraft_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "aircrafts_hash_key")
@@ -257,12 +264,12 @@ class AircraftsTransformer:
         }
 
 
-class AirlinesTransformer:
-    def __init__(self, airlines_file: Path):
-        assert airlines_file.exists()
-        self.__airlines_file = airlines_file
+class AirlinesTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__airlines_file = spark_dir / "airlines.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         airlines_df: DataFrame = spark_session.read.csv(
             str(self.__airlines_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "airlines_hash_key")
@@ -275,21 +282,14 @@ class AirlinesTransformer:
         return {"airlines_hub_path": airlines_hub_path}
 
 
-class AircraftNumsTransformer:
-    def __init__(
-        self,
-        aircraft_nums_file: Path,
-        aircraft_file: Path,
-        airlines_file: Path,
-    ):
-        assert aircraft_nums_file.exists()
-        assert aircraft_file.exists()
-        assert airlines_file.exists()
-        self.__aircraft_nums_file = aircraft_nums_file
-        self.__aircraft_file = aircraft_file
-        self.__airlines_file = airlines_file
+class AircraftNumsTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__aircraft_nums_file = spark_dir / "aircraft_ids.csv.gz"
+        self.__aircraft_file = spark_dir / "aircrafts.csv.gz"
+        self.__airlines_file = spark_dir / "airlines.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         aircraft_df: DataFrame = spark_session.read.csv(
             str(self.__aircraft_file), sep=",", header=True
         ).withColumnsRenamed(
@@ -339,14 +339,13 @@ class AircraftNumsTransformer:
         }
 
 
-class TicketTransformer:
-    def __init__(self, ticket_file: Path, flights_file: Path):
-        assert ticket_file.exists()
-        assert flights_file.exists()
-        self.__ticket_file = ticket_file
-        self.__flights_file = flights_file
+class TicketTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__ticket_file = spark_dir / "tickets.csv.gz"
+        self.__flights_file = spark_dir / "flights.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         tickets_df: DataFrame = spark_session.read.csv(
             str(self.__ticket_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "tickets_hash_key")
@@ -382,14 +381,13 @@ class TicketTransformer:
         }
 
 
-class FareCondTransformer:
-    def __init__(self, seat_classes_file: Path, ticket_file: Path):
-        assert seat_classes_file.exists()
-        assert ticket_file.exists()
-        self.__ticket_file = ticket_file
-        self.__seat_classes_file = seat_classes_file
+class FareCondTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__ticket_file = spark_dir / "tickets.csv.gz"
+        self.__seat_classes_file = spark_dir / "seat_classes.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         seat_classes_df: DataFrame = spark_session.read.csv(
             str(self.__seat_classes_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "seat_class_hash_key")
@@ -424,14 +422,13 @@ class FareCondTransformer:
         }
 
 
-class PassengerTransformer:
-    def __init__(self, passenger_file: Path, ticket_file: Path):
-        assert passenger_file.exists()
-        assert ticket_file.exists()
-        self.__ticket_file = ticket_file
-        self.__passenger_file = passenger_file
+class PassengerTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__ticket_file = spark_dir / "tickets.csv.gz"
+        self.__passenger_file = spark_dir / "passengers.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         passenger_df: DataFrame = spark_session.read.csv(
             str(self.__passenger_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "passengers_hash_key")
@@ -473,14 +470,13 @@ class PassengerTransformer:
         }
 
 
-class AirportTransformer:
-    def __init__(self, flights_file: Path, airport_file: Path):
-        assert flights_file.exists()
-        assert airport_file.exists()
-        self.__flights_file = flights_file
-        self.__airport_file = airport_file
+class AirportTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__flights_file = spark_dir / "flights.csv.gz"
+        self.__airport_file = spark_dir / "airports.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         airport_df: DataFrame = spark_session.read.csv(
             str(self.__airport_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "airport_hash_key")
@@ -531,12 +527,12 @@ class AirportTransformer:
         }
 
 
-class FlightsTransformer:
-    def __init__(self, flights_file: Path):
-        assert flights_file.exists()
-        self.__flights_file = flights_file
+class FlightsTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__flights_file = spark_dir / "flights.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         flights_df: DataFrame = spark_session.read.csv(
             str(self.__flights_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "flights_hash_key")
@@ -555,14 +551,13 @@ class FlightsTransformer:
         }
 
 
-class SchedulesTransformer:
-    def __init__(self, flights_file: Path, schedules_file: Path):
-        assert flights_file.exists()
-        assert schedules_file.exists()
-        self.__flights_file = flights_file
-        self.__schedules_file = schedules_file
+class SchedulesTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__flights_file = spark_dir / "flights.csv.gz"
+        self.__schedules_file = spark_dir / "schedules.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         schedules_df: DataFrame = spark_session.read.csv(
             str(self.__schedules_file), sep=",", header=True
         ).withColumnRenamed("hash_key", "schedules_hash_key")
@@ -605,21 +600,14 @@ class SchedulesTransformer:
         }
 
 
-class StatusInfoTransformer:
-    def __init__(
-        self,
-        status_info_file: Path,
-        schedules_file: Path,
-        status_file: Path,
-    ):
-        assert status_info_file.exists()
-        assert schedules_file.exists()
-        assert status_file.exists()
-        self.__status_info_file = status_info_file
-        self.__schedules_file = schedules_file
-        self.__status_file = status_file
+class StatusInfoTransformer(AbstractCsvTableTransformer):
+    def __init__(self, spark_dir: Path):
+        assert spark_dir.exists()
+        self.__status_info_file = spark_dir / "statuses_info.csv.gz"
+        self.__schedules_file = spark_dir / "schedules.csv.gz"
+        self.__status_file = spark_dir / "statuses.csv.gz"
 
-    def transform(self, spark_session: SparkSession) -> Dict[Path, str]:
+    def transform(self, spark_session: SparkSession) -> Dict[str, Path]:
         schedules_df: DataFrame = spark_session.read.csv(
             str(self.__schedules_file), sep=",", header=True
         ).withColumnsRenamed(
@@ -683,7 +671,7 @@ class PySparkDataTransformer:
     def start_spark_session(
         self,
     ) -> None:
-        self.__spark: SparkSession = (
+        self.__spark_session: SparkSession = (
             SparkSession.builder.appName(self.__spark_session_name)
             # .master(f"spark://{self.__spark_ip}:7077")
             .getOrCreate()
@@ -691,7 +679,7 @@ class PySparkDataTransformer:
 
     def transform_flight_info_to_columns(self, file_path: Path) -> None:
         assert file_path.exists()
-        df: DataFrame = self.__spark.read.csv(
+        df: DataFrame = self.__spark_session.read.csv(
             str(file_path), sep=",", header=True, escape='"'
         )
         schema = StructType(
@@ -711,7 +699,7 @@ class PySparkDataTransformer:
 
     def trasform_passport_to_columns(self, file_path: Path) -> None:
         assert file_path.exists()
-        df: DataFrame = self.__spark.read.csv(
+        df: DataFrame = self.__spark_session.read.csv(
             str(file_path), sep=",", header=True, escape='"'
         )
         schema = StructType(
@@ -730,7 +718,7 @@ class PySparkDataTransformer:
 
     def add_md5_hash_column(self, file_path: Path, columns: List[str]):
         assert file_path.exists()
-        df: DataFrame = self.__spark.read.csv(
+        df: DataFrame = self.__spark_session.read.csv(
             str(file_path), sep=",", header=True
         )
         df_with_hash = df.withColumn(
@@ -742,7 +730,7 @@ class PySparkDataTransformer:
 
     def add_timestamp_column(self, file_path: Path, etl_time: datetime):
         assert file_path.exists()
-        df: DataFrame = self.__spark.read.csv(
+        df: DataFrame = self.__spark_session.read.csv(
             str(file_path), sep=",", header=True
         )
         df.withColumn("load_date", lit(etl_time)).toPandas().to_csv(
@@ -751,9 +739,19 @@ class PySparkDataTransformer:
 
     def add_record_source(self, file_path: Path, source: str):
         assert file_path.exists()
-        df: DataFrame = self.__spark.read.csv(
+        df: DataFrame = self.__spark_session.read.csv(
             str(file_path), sep=",", header=True
         )
         df.withColumn("record_source", lit(source)).toPandas().to_csv(
             file_path, index=False, compression="gzip"
         )
+
+    def transform_data(self, spark_dir: Path) -> Dict[str, Path]:
+        assert spark_dir.exists()
+        res = {}
+        for transformer in AbstractCsvTableTransformer.__subclasses__():
+            res = {
+                **transformer(spark_dir).transform(self.__spark_session),
+                **res,
+            }
+        return res

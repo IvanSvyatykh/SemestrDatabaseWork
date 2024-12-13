@@ -73,19 +73,17 @@ class FlightsHubRepositoty:
     __name = "flights_hub"
 
     def insert(self, flights: FlightsHub) -> str:
-        return f"""INSERT INTO {self.__name} (flights_hash_key, load_date, record_source,flight_number)
+        return f"""INSERT INTO {self.__name} (flights_hash_key, load_date, record_source)
                 VALUES ({flights.flights_hash}, 
                 {flights.load_date}, 
-                {flights.record_source},
-                {flights.flight_num});
+                {flights.record_source});
                 """
 
     def create_table(self) -> str:
         return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
                 flights_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
-                record_source varchar(150),
-                flight_number varchar(6));
+                record_source varchar(150));
             """
 
 

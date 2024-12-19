@@ -1,19 +1,18 @@
 from datetime import datetime
+from pathlib import Path
+from typing import List
+
+import pandas as pd
 
 
 class StatusHub:
 
-    def __init__(
-        self,
-        status_hash: str,
-        load_date: datetime,
-        record_source: str,
-        status: str,
-    ):
-        self.__status_hash = status_hash
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__status = status
+    def __init__(self, row: pd.Series):
+
+        self.__status_hash = row["load_date"]
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__status = row["status"]
 
     @property
     def status_hash(self) -> str:
@@ -33,15 +32,10 @@ class StatusHub:
 
 
 class SchedulesHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        schedules_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__schedules_hash = schedules_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__schedules_hash = row["schedules_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -57,15 +51,10 @@ class SchedulesHub:
 
 
 class FlightsHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        flights_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__flights_hash = flights_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__flights_hash = row["flights_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -81,17 +70,11 @@ class FlightsHub:
 
 
 class AirportsHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        airports_hash: str,
-        iata_name: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__airports_hash = airports_hash
-        self.__iata_name = iata_name
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__airports_hash = row["airport_hash_key"]
+        self.__iata_name = row["iata_name"]
 
     @property
     def load_date(self) -> str:
@@ -111,17 +94,11 @@ class AirportsHub:
 
 
 class AircraftsHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        aircrafts_hash: str,
-        iata_name: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__aircrafts_hash = aircrafts_hash
-        self.__iata_name = iata_name
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__aircrafts_hash = row["aircrafts_hash_key"]
+        self.__iata_name = row["iata_name"]
 
     @property
     def load_date(self) -> str:
@@ -141,17 +118,11 @@ class AircraftsHub:
 
 
 class TicketsHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        ticket_hash: str,
-        number: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__ticket_hash = ticket_hash
-        self.__number = number
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__ticket_hash = row["record_source"]
+        self.__number = row["number"]
 
     @property
     def load_date(self) -> str:
@@ -171,19 +142,12 @@ class TicketsHub:
 
 
 class PassengersHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        passenger_hash: str,
-        passport_number: str,
-        passport_series: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__passenger_hash = passenger_hash
-        self.__passport_number = passport_number
-        self.__passport_series = passport_series
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__passenger_hash = row["passengers_hash_key"]
+        self.__passport_number = row["number"]
+        self.__passport_series = row["series"]
 
     @property
     def load_date(self) -> str:
@@ -207,19 +171,12 @@ class PassengersHub:
 
 
 class AirlinesHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        airline_hash: str,
-        icao_name: str,
-        name: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__airline_hash = airline_hash
-        self.__icao_name = icao_name
-        self.__name = name
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__airline_hash = row["airlines_hash_key"]
+        self.__icao_name = row["icao_name"]
+        self.__name = row["name"]
 
     @property
     def load_date(self) -> str:
@@ -243,17 +200,11 @@ class AirlinesHub:
 
 
 class SeatClassesHub:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        seat_class_hash: str,
-        seat_class: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__seat_class_hash = seat_class_hash
-        self.__seat_class = seat_class
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__seat_class_hash = row["seat_class_hash_key"]
+        self.__seat_class = row["fare_conditions"]
 
     @property
     def load_date(self) -> str:
@@ -273,19 +224,12 @@ class SeatClassesHub:
 
 
 class StatusesInfosLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        status_hash: str,
-        schedules_hash: str,
-        status_info_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__status_hash = status_hash
-        self.__schedules_hash = schedules_hash
-        self.__status_info_hash = status_info_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__status_hash = row["status_hash_key"]
+        self.__schedules_hash = row["schedules_hash_key"]
+        self.__status_info_hash = row["status_info_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -309,17 +253,11 @@ class StatusesInfosLink:
 
 
 class SchedulesLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        flight_hash: str,
-        schedules_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__flight_hash = flight_hash
-        self.__schedules_hash = schedules_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__flight_hash = row["flights_hash_key"]
+        self.__schedules_hash = row["schedules_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -339,19 +277,12 @@ class SchedulesLink:
 
 
 class AirportsLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        flight_hash: str,
-        arrival_airport_hash: str,
-        departure_airport_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__flight_hash = flight_hash
-        self.__arrival_airport_hash = arrival_airport_hash
-        self.__departure_airport_hash = departure_airport_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__flight_hash = row["flights_hash_key"]
+        self.__arrival_airport_hash = row["arrival_airport_hash_key"]
+        self.__departure_airport_hash = row["departure_airport_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -375,19 +306,12 @@ class AirportsLink:
 
 
 class AircraftNumsLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        airline_hash: str,
-        aircraft_hash: str,
-        aircraft_num_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__airline_hash = airline_hash
-        self.__aircraft_hash = aircraft_hash
-        self.__aircraft_num_hash = aircraft_num_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__airline_hash = row["airlines_hash_key"]
+        self.__aircraft_hash = row["aircraft_hash_key"]
+        self.__aircraft_num_hash = row["aircraft_nums_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -411,17 +335,11 @@ class AircraftNumsLink:
 
 
 class AircraftsLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        aircraft_hash: str,
-        flight_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__aircraft_hash = aircraft_hash
-        self.__flight_hash = flight_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__aircraft_hash = row["aircrafts_hash_key"]
+        self.__flight_hash = row["flights_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -441,17 +359,11 @@ class AircraftsLink:
 
 
 class TicketsLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        ticket_hash: str,
-        flight_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__ticket_hash = ticket_hash
-        self.__flight_hash = flight_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__ticket_hash = row["tickets_hash_key"]
+        self.__flight_hash = row["flights_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -471,17 +383,11 @@ class TicketsLink:
 
 
 class SeatClassesLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        ticket_hash: str,
-        seat_class_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__ticket_hash = ticket_hash
-        self.__seat_class_hash = seat_class_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__ticket_hash = row["tickets_hash_key"]
+        self.__seat_class_hash = row["seat_class_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -501,17 +407,11 @@ class SeatClassesLink:
 
 
 class PassengerLink:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        ticket_hash: str,
-        passenger_hash: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__ticket_hash = ticket_hash
-        self.__passenger_hash = passenger_hash
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__ticket_hash = row["tickets_hash_key"]
+        self.__passenger_hash = row["passengers_hash_key"]
 
     @property
     def load_date(self) -> str:
@@ -531,19 +431,12 @@ class PassengerLink:
 
 
 class StatusInfosSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        status_info_hash: str,
-        set_status_time: datetime,
-        unset_status_time: datetime,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__status_info_hash = status_info_hash
-        self.__set_status_time = set_status_time
-        self.__unset_status_time = unset_status_time
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__status_info_hash = row["status_info_hash_key"]
+        self.__set_status_time = row["set_status_time"]
+        self.__unset_status_time = row["unset_status_time"]
 
     @property
     def load_date(self) -> str:
@@ -567,23 +460,14 @@ class StatusInfosSat:
 
 
 class SchedulesSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        schedules_hash: str,
-        actual_arrival_time: datetime,
-        actual_departure_time: datetime,
-        planned_arrival_time: datetime,
-        planned_departure_time: datetime,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__schedules_hash = schedules_hash
-        self.__actual_arrival_time = actual_arrival_time
-        self.__actual_departure_time = actual_departure_time
-        self.__planned_arrival_time = planned_arrival_time
-        self.__planned_departure_time = planned_departure_time
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__schedules_hash = row["schedules_hash_key"]
+        self.__actual_arrival_time = row["actual_arrival"]
+        self.__actual_departure_time = row["actual_departure"]
+        self.__planned_arrival_time = row["arrival_time"]
+        self.__planned_departure_time = row["departure_time"]
 
     @property
     def load_date(self) -> str:
@@ -615,17 +499,11 @@ class SchedulesSat:
 
 
 class CargoFlightsSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        flight_hash: str,
-        weight: int,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__flight_hash = flight_hash
-        self.__weight = weight
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__flight_hash = row["flights_hash_key"]
+        self.__weight = row["weight"]
 
     @property
     def load_date(self) -> str:
@@ -645,21 +523,14 @@ class CargoFlightsSat:
 
 
 class PassengerFlightsSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        flight_hash: str,
-        registration_time: datetime,
-        is_ramp: bool,
-        gate: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__flight_hash = flight_hash
-        self.__registration_time = registration_time
-        self.__is_ramp = is_ramp
-        self.__gate = gate
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__flight_hash = row["flights_hash_key"]
+        self.__registration_time = row["registration_time"]
+        self.__is_ramp = row["is_ramp"]
+        self.__gate = row["gate"]
+        self.__flight_number = row["flight_number"]
 
     @property
     def load_date(self) -> str:
@@ -685,23 +556,19 @@ class PassengerFlightsSat:
     def gate(self) -> str:
         return self.__gate
 
+    @property
+    def flight_number(self) -> str:
+        return self.__flight_number
+
 
 class AirportsSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        airport_hash: str,
-        name: str,
-        city: str,
-        timezone: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__airport_hash = airport_hash
-        self.__name = name
-        self.__city = city
-        self.__timezone = timezone
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__airport_hash = row["airport_hash_key"]
+        self.__name = row["name"]
+        self.__city = row["city"]
+        self.__timezone = row["timezone"]
 
     @property
     def load_date(self) -> str:
@@ -729,19 +596,12 @@ class AirportsSat:
 
 
 class AircraftsSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        aircraft_hash: str,
-        name: str,
-        seats_num: int,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__aircraft_hash = aircraft_hash
-        self.__name = name
-        self.__seats_num = seats_num
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__aircraft_hash = row["aircrafts_hash_key"]
+        self.__name = row["name"]
+        self.__seats_num = row["seats_num"]
 
     @property
     def load_date(self) -> str:
@@ -765,19 +625,12 @@ class AircraftsSat:
 
 
 class AircraftNumsSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        aircraft_num_hash: str,
-        registration_time: datetime,
-        deregistration_time: datetime,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__aircraft_num_hash = aircraft_num_hash
-        self.__registration_time = registration_time
-        self.__deregistration_time = deregistration_time
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__aircraft_num_hash = row["aircraft_nums_hash_key"]
+        self.__registration_time = row["registration_time"]
+        self.__deregistration_time = row["deregistartion_time"]
 
     @property
     def load_date(self) -> str:
@@ -801,23 +654,14 @@ class AircraftNumsSat:
 
 
 class TicketsSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        ticket_hash: str,
-        cost: float,
-        baggage_weight: float,
-        is_registred: bool,
-        seat_num: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__ticket_hash = ticket_hash
-        self.__cost = cost
-        self.__baggage_weight = baggage_weight
-        self.__is_registred = is_registred
-        self.__seat_num = seat_num
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__ticket_hash = row["tickets_hash_key"]
+        self.__cost = row["cost"]
+        self.__baggage_weight = row["baggage_weight"]
+        self.__is_registred = row["is_registred"]
+        self.__seat_num = row["seat_num"]
 
     @property
     def load_date(self) -> str:
@@ -849,19 +693,12 @@ class TicketsSat:
 
 
 class PassengersSat:
-    def __init__(
-        self,
-        load_date: datetime,
-        record_source: str,
-        passenger_hash: str,
-        name: str,
-        surname: str,
-    ):
-        self.__load_date = load_date
-        self.__record_source = record_source
-        self.__passenger_hash = passenger_hash
-        self.__name = name
-        self.__surname = surname
+    def __init__(self, row: pd.Series):
+        self.__load_date = row["load_date"]
+        self.__record_source = row["record_source"]
+        self.__passenger_hash = row["passengers_hash_key"]
+        self.__name = row["name"]
+        self.__surname = row["surname"]
 
     @property
     def load_date(self) -> str:
@@ -882,3 +719,19 @@ class PassengersSat:
     @property
     def surname(self) -> str:
         return self.__surname
+
+
+class SchemaManager:
+
+    def __init__(self, csv_path: Path, table_name: str):
+        self.__path = csv_path
+        self.__table = table_name
+
+    def get_schemas_list(self) -> List:
+
+        df = pd.read_csv(self.__path)
+        res = []
+        for index, row in df.iterrows():
+            pass
+
+        return res

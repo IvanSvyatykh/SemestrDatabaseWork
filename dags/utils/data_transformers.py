@@ -79,6 +79,12 @@ TABLES_COLUMNS = {
         "is_registred",
         "seat_num",
     ],
+    "tickets_hub": [
+        "load_date",
+        "record_source",
+        "tickets_hash_key",
+        "number",
+    ],
     "tickets_link": [
         "load_date",
         "record_source",
@@ -258,9 +264,9 @@ class AircraftsTransformer(AbstractCsvTableTransformer):
             aircrafts_link_path, index=False
         )
         return {
-            "aircrafts_hub_path": aircrafts_hub_path,
-            "aircrafts_sat_path": aircrafts_sat_path,
-            "aircrafts_link_path": aircrafts_link_path,
+            "aircrafts_hub": aircrafts_hub_path,
+            "aircrafts_sat": aircrafts_sat_path,
+            "aircrafts_link": aircrafts_link_path,
         }
 
 
@@ -279,7 +285,7 @@ class AirlinesTransformer(AbstractCsvTableTransformer):
         airlines_df[TABLES_COLUMNS["airlines_hub"]].toPandas().to_csv(
             airlines_hub_path, index=False
         )
-        return {"airlines_hub_path": airlines_hub_path}
+        return {"airlines_hub": airlines_hub_path}
 
 
 class AircraftNumsTransformer(AbstractCsvTableTransformer):
@@ -334,8 +340,8 @@ class AircraftNumsTransformer(AbstractCsvTableTransformer):
             aircraft_nums_link_path, index=False
         )
         return {
-            "aircraft_nums_sat_path": aircraft_nums_sat_path,
-            "aircraft_nums_link_path": aircraft_nums_link_path,
+            "aircraft_nums_sat": aircraft_nums_sat_path,
+            "aircraft_nums_link": aircraft_nums_link_path,
         }
 
 
@@ -364,7 +370,7 @@ class TicketTransformer(AbstractCsvTableTransformer):
         tickets_df[TABLES_COLUMNS["tickets_sat"]].toPandas().to_csv(
             tickets_sat_path, index=False
         )
-        tickets_df[TABLES_COLUMNS["tickets_sat"]].toPandas().to_csv(
+        tickets_df[TABLES_COLUMNS["tickets_hub"]].toPandas().to_csv(
             tickets_hub_path, index=False
         )
         flights_df.join(
@@ -375,9 +381,9 @@ class TicketTransformer(AbstractCsvTableTransformer):
             tickets_link_path, index=False
         )
         return {
-            "tickets_sat_path": tickets_sat_path,
-            "tickets_hub_path": tickets_hub_path,
-            "tickets_link_path": tickets_link_path,
+            "tickets_sat": tickets_sat_path,
+            "tickets_hub": tickets_hub_path,
+            "tickets_link": tickets_link_path,
         }
 
 
@@ -417,8 +423,8 @@ class FareCondTransformer(AbstractCsvTableTransformer):
             seat_classes_link_path, index=False
         )
         return {
-            "seat_classes_hub_path": seat_classes_hub_path,
-            "seat_classes_link_path": seat_classes_link_path,
+            "seat_classes_hub": seat_classes_hub_path,
+            "seat_classes_link": seat_classes_link_path,
         }
 
 
@@ -464,9 +470,9 @@ class PassengerTransformer(AbstractCsvTableTransformer):
             passengers_link_path, index=False
         )
         return {
-            "passengers_sat_path": passengers_sat_path,
-            "passengers_link_path": passengers_link_path,
-            "passengers_hub_path": passengers_hub_path,
+            "passengers_sat": passengers_sat_path,
+            "passengers_link": passengers_link_path,
+            "passengers_hub": passengers_hub_path,
         }
 
 
@@ -521,9 +527,9 @@ class AirportTransformer(AbstractCsvTableTransformer):
             airports_link_path, index=False
         )
         return {
-            "airports_hub_path": airports_hub_path,
-            "airports_link_path": airports_link_path,
-            "airports_sat_path": airports_sat_path,
+            "airports_hub": airports_hub_path,
+            "airports_link": airports_link_path,
+            "airports_sat": airports_sat_path,
         }
 
 
@@ -546,8 +552,8 @@ class FlightsTransformer(AbstractCsvTableTransformer):
             TABLES_COLUMNS["passenger_flights_sat"]
         ].toPandas().to_csv(flights_sat_path, index=False)
         return {
-            "flights_hub_path": flights_hub_path,
-            "lights_sat_path": flights_sat_path,
+            "flights_hub": flights_hub_path,
+            "lights_sat": flights_sat_path,
         }
 
 
@@ -594,9 +600,9 @@ class SchedulesTransformer(AbstractCsvTableTransformer):
         )
 
         return {
-            "schedules_sat_path": schedules_sat_path,
-            "schedules_link_path": schedules_link_path,
-            "schedules_hub_path": schedules_hub_path,
+            "schedules_sat": schedules_sat_path,
+            "schedules_link": schedules_link_path,
+            "schedules_hub": schedules_hub_path,
         }
 
 
@@ -653,9 +659,9 @@ class StatusInfoTransformer(AbstractCsvTableTransformer):
             status_info_link_path, index=False
         )
         return {
-            "status_info_sat_path": status_info_sat_path,
-            "status_info_link_path": status_info_link_path,
-            "status_info_hub_path": status_info_hub_path,
+            "status_info_sat": status_info_sat_path,
+            "status_info_link": status_info_link_path,
+            "status_info_hub": status_info_hub_path,
         }
 
 

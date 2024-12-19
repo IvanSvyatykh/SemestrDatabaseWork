@@ -4,10 +4,16 @@ from minio import Minio
 
 
 from pathlib import Path
+import pandas as pd
 import pymongo
-from typing import List
+from typing import Dict, List
 from pyspark.sql.types import StructType
 from pyspark.sql import SparkSession, DataFrame
+from dags.utils.database.db_core import (
+    CassandraConfig,
+    CassandraUnitOfWork,
+)
+from dags.utils.database.repositories import AbstractCassandraRepository
 from utils.spark_df_schemas import COLLECTIONS_SCHEMAS
 
 
@@ -173,3 +179,42 @@ class DataWorker:
                 / minio_file.object_name.split("/")[-1],
             )
         return paths
+
+    def __insert_table(
+        path: Path,
+        cassndra_uow: CassandraUnitOfWork,
+        rep: AbstractCassandraRepository,
+    ) -> None:
+
+        df = pd.read_csv(path)
+
+    def __add_all_tables_type(
+        tables: Dict[str, Path], cassndra_uow: CassandraUnitOfWork
+    ) -> None:
+        for k, v in tables:
+            for rep in AbstractCassandraRepository.__subclasses__():
+                temp = rep()
+                if k == temp.name:
+                    temp.create_table()
+                    temp.insert()
+
+    def add_data_to_cassandra(
+        self, files: Dict[str, Path], cassandra_ip: str
+    ) -> None:
+
+        cassandra_config = CassandraConfig(
+            "dwh", [cassandra_ip, "172.21.0.6"]
+        )
+        cassadra_uow = CassandraUnitOfWork(cassandra_config.connect())
+        cassandra_config.create_keyspace()
+        hubs: Dict[str, Path] = {}
+        sats: Dict[str, Path] = {}
+        links: Dict[str, Path] = {}
+        for k, path in files.items():
+
+            if "hub" in k:
+                hubs[k] = path
+            if "sat" in k:
+                sats[k] = path
+            if "link" in k:
+                links[k] = path

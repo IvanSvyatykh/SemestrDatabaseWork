@@ -26,14 +26,26 @@ from dwh_tables_scheamas import (
     PassengersSat,
     TicketsSat,
 )
+from abc import ABC, abstractmethod
 
 
-class StatusHubRepository:
+class AbstractCassandraRepository(ABC):
 
-    __name = "statuses_hub"
+    @abstractmethod
+    def insert(self, schema) -> str:
+        pass
+
+    @abstractmethod
+    def create_table(self) -> str:
+        pass
+
+
+class StatusHubRepository(AbstractCassandraRepository):
+
+    name = "statuses_hub"
 
     def insert(self, status: StatusHub) -> str:
-        return f"""INSERT INTO {self.__name} (status_hash_key, load_date, record_source, status)
+        return f"""INSERT INTO {StatusHubRepository.name} (status_hash_key, load_date, record_source, status)
                 VALUES ({status.status_hash}, 
                 {status.load_date}, 
                 {status.record_source}, 
@@ -41,7 +53,7 @@ class StatusHubRepository:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {StatusHubRepository.name} (
                 status_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -49,50 +61,50 @@ class StatusHubRepository:
             """
 
 
-class SchedulesHubRepository:
+class SchedulesHubRepository(AbstractCassandraRepository):
 
-    __name = "schedules_hub"
+    name = "schedules_hub"
 
     def insert(self, schedules: SchedulesHub) -> str:
-        return f"""INSERT INTO {self.__name} (schedules_hash_key, load_date, record_source)
+        return f"""INSERT INTO {SchedulesHubRepository.name} (schedules_hash_key, load_date, record_source)
                 VALUES ({schedules.schedules_hash}, 
                 {schedules.load_date}, 
                 {schedules.record_source}, 
                 );"""
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {SchedulesHubRepository.name} (
                 schedules_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150));
             """
 
 
-class FlightsHubRepositoty:
+class FlightsHubRepositoty(AbstractCassandraRepository):
 
-    __name = "flights_hub"
+    name = "flights_hub"
 
     def insert(self, flights: FlightsHub) -> str:
-        return f"""INSERT INTO {self.__name} (flights_hash_key, load_date, record_source)
+        return f"""INSERT INTO {FlightsHubRepositoty.name} (flights_hash_key, load_date, record_source)
                 VALUES ({flights.flights_hash}, 
                 {flights.load_date}, 
                 {flights.record_source});
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {FlightsHubRepositoty.name} (
                 flights_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150));
             """
 
 
-class AirportsHubRepositoty:
+class AirportsHubRepositoty(AbstractCassandraRepository):
 
-    __name = "airports_hub"
+    name = "airports_hub"
 
     def insert(self, airport: AirportsHub) -> str:
-        return f"""INSERT INTO {self.__name} (airports_hash_key, load_date, record_source,iata_name)
+        return f"""INSERT INTO {AirportsHubRepositoty.name} (airports_hash_key, load_date, record_source,iata_name)
                 VALUES ({airport.airports_hash}, 
                 {airport.load_date}, 
                 {airport.record_source},
@@ -100,7 +112,7 @@ class AirportsHubRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AirportsHubRepositoty.name} (
                 airports_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -108,12 +120,12 @@ class AirportsHubRepositoty:
             """
 
 
-class AircraftsHubRepositoty:
+class AircraftsHubRepositoty(AbstractCassandraRepository):
 
-    __name = "aircrafts_hub"
+    name = "aircrafts_hub"
 
     def insert(self, aircraft: AircraftsHub) -> str:
-        return f"""INSERT INTO {self.__name} (airports_hash_key, load_date, record_source,iata_name)
+        return f"""INSERT INTO {AircraftsHubRepositoty.name} (airports_hash_key, load_date, record_source,iata_name)
                 VALUES ({aircraft.aircrafts_hash}, 
                 {aircraft.load_date}, 
                 {aircraft.record_source},
@@ -121,7 +133,7 @@ class AircraftsHubRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AircraftsHubRepositoty.name} (
                 aircrafts_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -129,12 +141,12 @@ class AircraftsHubRepositoty:
             """
 
 
-class TicketsHubRepositoty:
+class TicketsHubRepositoty(AbstractCassandraRepository):
 
-    __name = "tickets_hub"
+    name = "tickets_hub"
 
     def insert(self, ticket: TicketsHub) -> str:
-        return f"""INSERT INTO {self.__name} (tickets_hash_key, load_date, record_source,number)
+        return f"""INSERT INTO {TicketsHubRepositoty.name} (tickets_hash_key, load_date, record_source,number)
                 VALUES ({ticket.ticket_hash}, 
                 {ticket.load_date}, 
                 {ticket.record_source},
@@ -142,7 +154,7 @@ class TicketsHubRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {TicketsHubRepositoty.name} (
                 tickets_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -150,12 +162,12 @@ class TicketsHubRepositoty:
             """
 
 
-class PassengersHubRepositoty:
+class PassengersHubRepositoty(AbstractCassandraRepository):
 
-    __name = "passengers_hub"
+    name = "passengers_hub"
 
     def insert(self, passenger: PassengersHub) -> str:
-        return f"""INSERT INTO {self.__name} (passengers_hash_key, load_date, record_source,passport_series,passport_number)
+        return f"""INSERT INTO {PassengersHubRepositoty.name} (passengers_hash_key, load_date, record_source,passport_series,passport_number)
                 VALUES ({passenger.passenger_hash}, 
                 {passenger.load_date}, 
                 {passenger.record_source},
@@ -164,7 +176,7 @@ class PassengersHubRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {PassengersHubRepositoty.name} (
                 passengers_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -173,12 +185,12 @@ class PassengersHubRepositoty:
             """
 
 
-class AirlinesHubRepositoty:
+class AirlinesHubRepositoty(AbstractCassandraRepository):
 
-    __name = "airlines_hub"
+    name = "airlines_hub"
 
     def insert(self, airline: AirlinesHub) -> str:
-        return f"""INSERT INTO {self.__name} (airlines_hash_key, load_date, record_source,icao_name,name)
+        return f"""INSERT INTO {AirlinesHubRepositoty.name} (airlines_hash_key, load_date, record_source,icao_name,name)
                 VALUES ({airline.airline_hash}, 
                 {airline.load_date}, 
                 {airline.record_source},
@@ -187,7 +199,7 @@ class AirlinesHubRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AirlinesHubRepositoty.name} (
                 airlines_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -196,11 +208,11 @@ class AirlinesHubRepositoty:
             """
 
 
-class FareCondsHubRepository:
-    __name = "seat_classes_hub"
+class FareCondsHubRepository(AbstractCassandraRepository):
+    name = "seat_classes_hub"
 
     def insert(self, seat_class: SeatClassesHub) -> str:
-        return f"""INSERT INTO {self.__name} (seat_class_hash_key, load_date, record_source,seat_class)
+        return f"""INSERT INTO {FareCondsHubRepository.name} (seat_class_hash_key, load_date, record_source,seat_class)
                 VALUES ({seat_class.seat_class_hash}, 
                 {seat_class.load_date}, 
                 {seat_class.record_source},
@@ -208,7 +220,7 @@ class FareCondsHubRepository:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {FareCondsHubRepository.name} (
                 seat_class_hash_key varchar(32) PRIMARY KEY,
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -216,12 +228,12 @@ class FareCondsHubRepository:
             """
 
 
-class StatusesInfosLinkRepositoty:
+class StatusesInfosLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "statuses_info_link"
+    name = "statuses_info_link"
 
     def insert(self, status_info: StatusesInfosLink) -> str:
-        return f"""INSERT INTO {self.__name} (statuses_info_has_key, load_date, record_source,schedules_hash_key,status_hash_key)
+        return f"""INSERT INTO {StatusesInfosLinkRepositoty.name} (statuses_info_has_key, load_date, record_source,schedules_hash_key,status_hash_key)
                 VALUES ({status_info.status_info_hash}, 
                 {status_info.load_date}, 
                 {status_info.record_source},
@@ -230,7 +242,7 @@ class StatusesInfosLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name}_link (
+        return f""" CREATE TABLE IF NOT EXISTS {StatusesInfosLinkRepositoty.name}_link (
                 statuses_info_has_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -239,12 +251,12 @@ class StatusesInfosLinkRepositoty:
             """
 
 
-class SchedulesLinkRepositoty:
+class SchedulesLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "schedules_link"
+    name = "schedules_link"
 
     def insert(self, schedule_link: SchedulesLink) -> str:
-        return f"""INSERT INTO {self.__name} (schedules_hash_key, load_date, record_source,flight_hash_key)
+        return f"""INSERT INTO {SchedulesLinkRepositoty.name} (schedules_hash_key, load_date, record_source,flight_hash_key)
                 VALUES ({schedule_link.schedules_hash}, 
                 {schedule_link.load_date}, 
                 {schedule_link.record_source},
@@ -252,7 +264,7 @@ class SchedulesLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {SchedulesLinkRepositoty.name} (
                 schedules_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -260,12 +272,12 @@ class SchedulesLinkRepositoty:
             """
 
 
-class AirportsLinkRepositoty:
+class AirportsLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "airports_link"
+    name = "airports_link"
 
     def insert(self, airports_link: AirportsLink) -> str:
-        return f"""INSERT INTO {self.__name} (arrival_airport_hash_key,departure_airport_hash_key, load_date, record_source,flight_hash_key)
+        return f"""INSERT INTO {AirportsLinkRepositoty.name} (arrival_airport_hash_key,departure_airport_hash_key, load_date, record_source,flight_hash_key)
                 VALUES ({airports_link.arrival_airport_hash}, 
                 {airports_link.departure_airport_hash},
                 {airports_link.load_date}, 
@@ -274,7 +286,7 @@ class AirportsLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AirportsLinkRepositoty.name} (
                 arrival_airport_hash_key varchar(32),
                 departure_airport_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
@@ -283,12 +295,12 @@ class AirportsLinkRepositoty:
             """
 
 
-class AircraftNumsLinkRepositoty:
+class AircraftNumsLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "aircraft_nums_link"
+    name = "aircraft_nums_link"
 
     def insert(self, aircraft_num_link: AircraftNumsLink) -> str:
-        return f"""INSERT INTO {self.__name} (aircraft_num_hash_key, load_date, record_source,airline_hash_key,aircraft_hash_key)
+        return f"""INSERT INTO {AircraftNumsLinkRepositoty.name} (aircraft_num_hash_key, load_date, record_source,airline_hash_key,aircraft_hash_key)
                 VALUES ({aircraft_num_link.aircraft_num_hash}, 
                 {aircraft_num_link.load_date}, 
                 {aircraft_num_link.record_source},
@@ -297,7 +309,7 @@ class AircraftNumsLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AircraftNumsLinkRepositoty.name} (
                 aircraft_num_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -306,12 +318,12 @@ class AircraftNumsLinkRepositoty:
             """
 
 
-class AircraftsLinkRepositoty:
+class AircraftsLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "aircrafts_link"
+    name = "aircrafts_link"
 
     def insert(self, aircraft_link: AircraftsLink) -> str:
-        return f"""INSERT INTO {self.__name} (aircraft_hash_key, load_date, record_source,flight_hash_key)
+        return f"""INSERT INTO {AircraftsLinkRepositoty.name} (aircraft_hash_key, load_date, record_source,flight_hash_key)
                 VALUES ({aircraft_link.aircraft_hash}, 
                 {aircraft_link.load_date}, 
                 {aircraft_link.record_source},
@@ -319,7 +331,7 @@ class AircraftsLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AircraftsLinkRepositoty.name} (
                 aircraft_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -327,12 +339,12 @@ class AircraftsLinkRepositoty:
             """
 
 
-class TicketsLinkRepositoty:
+class TicketsLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "tickets_link"
+    name = "tickets_link"
 
     def insert(self, ticket_link: TicketsLink) -> str:
-        return f"""INSERT INTO {self.__name} (ticket_hash_key, load_date, record_source,flight_hash_key)
+        return f"""INSERT INTO {TicketsLinkRepositoty.name} (ticket_hash_key, load_date, record_source,flight_hash_key)
                 VALUES ({ticket_link.ticket_hash}, 
                 {ticket_link.load_date}, 
                 {ticket_link.record_source},
@@ -340,7 +352,7 @@ class TicketsLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {TicketsLinkRepositoty.name} (
                 ticket_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -348,12 +360,12 @@ class TicketsLinkRepositoty:
             """
 
 
-class SeatClassesLinkRepositoty:
+class SeatClassesLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "seat_classes_link"
+    name = "seat_classes_link"
 
     def insert(self, seat_class_link: SeatClassesLink) -> str:
-        return f"""INSERT INTO {self.__name} (ticket_hash_key, load_date, record_source,seat_class_hash_key)
+        return f"""INSERT INTO {SeatClassesLinkRepositoty.name} (ticket_hash_key, load_date, record_source,seat_class_hash_key)
                 VALUES ({seat_class_link.ticket_hash}, 
                 {seat_class_link.load_date}, 
                 {seat_class_link.record_source},
@@ -361,7 +373,7 @@ class SeatClassesLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {SeatClassesLinkRepositoty.name} (
                 ticket_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -369,12 +381,12 @@ class SeatClassesLinkRepositoty:
             """
 
 
-class PassengersLinkRepositoty:
+class PassengersLinkRepositoty(AbstractCassandraRepository):
 
-    __name = "passengers_link"
+    name = "passengers_link"
 
     def insert(self, passenger_link: PassengerLink) -> str:
-        return f"""INSERT INTO {self.__name} (ticket_hash_key, load_date, record_source,passenger_hash_key)
+        return f"""INSERT INTO {PassengersLinkRepositoty.name} (ticket_hash_key, load_date, record_source,passenger_hash_key)
                 VALUES ({passenger_link.ticket_hash}, 
                 {passenger_link.load_date}, 
                 {passenger_link.record_source},
@@ -382,7 +394,7 @@ class PassengersLinkRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {PassengersLinkRepositoty.name} (
                 ticket_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -390,12 +402,12 @@ class PassengersLinkRepositoty:
             """
 
 
-class StatusInfosSatRepositoty:
+class StatusInfosSatRepositoty(AbstractCassandraRepository):
 
-    __name = "status_infos_sat"
+    name = "status_infos_sat"
 
     def insert(self, status_info_sat: StatusInfosSat) -> str:
-        return f"""INSERT INTO {self.__name} (status_info_hash_key, load_date, record_source,set_status_time,unset_status_time)
+        return f"""INSERT INTO {StatusInfosSatRepositoty.name} (status_info_hash_key, load_date, record_source,set_status_time,unset_status_time)
                 VALUES ({status_info_sat.status_info_hash}, 
                 {status_info_sat.load_date}, 
                 {status_info_sat.record_source},
@@ -404,7 +416,7 @@ class StatusInfosSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {StatusInfosSatRepositoty.name} (
                 status_info_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -413,12 +425,12 @@ class StatusInfosSatRepositoty:
             """
 
 
-class SchedulesSatRepositoty:
+class SchedulesSatRepositoty(AbstractCassandraRepository):
 
-    __name = "schedules_sat"
+    name = "schedules_sat"
 
     def insert(self, schedule_sat: SchedulesSat) -> str:
-        return f"""INSERT INTO {self.__name} (schedules_hash_key, load_date, record_source,actual_arrival_time,actual_departure_time,planned_arrival_time,planned_departure_time)
+        return f"""INSERT INTO {SchedulesSatRepositoty.name} (schedules_hash_key, load_date, record_source,actual_arrival_time,actual_departure_time,planned_arrival_time,planned_departure_time)
                 VALUES ({schedule_sat.schedules_hash}, 
                 {schedule_sat.load_date}, 
                 {schedule_sat.record_source},
@@ -429,7 +441,7 @@ class SchedulesSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {SchedulesSatRepositoty.name} (
                 schedules_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -440,12 +452,12 @@ class SchedulesSatRepositoty:
             """
 
 
-class CargoFlightsSatRepositoty:
+class CargoFlightsSatRepositoty(AbstractCassandraRepository):
 
-    __name = "cargo_flights_sat"
+    name = "cargo_flights_sat"
 
     def insert(self, cargo_sat: CargoFlightsSat) -> str:
-        return f"""INSERT INTO {self.__name} (flight_hash_key, load_date, record_source,weight)
+        return f"""INSERT INTO {CargoFlightsSatRepositoty.name} (flight_hash_key, load_date, record_source,weight)
                 VALUES ({cargo_sat.flight_hash}, 
                 {cargo_sat.load_date}, 
                 {cargo_sat.record_source},
@@ -453,7 +465,7 @@ class CargoFlightsSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {CargoFlightsSatRepositoty.name} (
                 flight_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -461,37 +473,39 @@ class CargoFlightsSatRepositoty:
             """
 
 
-class PassengerFlightsSatRepositoty:
+class PassengerFlightsSatRepositoty(AbstractCassandraRepository):
 
-    __name = "passenger_flights_sat"
+    name = "passenger_flights_sat"
 
     def insert(self, passenger_sat: PassengerFlightsSat) -> str:
-        return f"""INSERT INTO {self.__name} (flight_hash_key, load_date, record_source,registration_time,is_ramp,gate)
+        return f"""INSERT INTO {PassengerFlightsSatRepositoty.name} (flight_hash_key, load_date, record_source,registration_time,is_ramp,gate,flight_number)
                 VALUES ({passenger_sat.flight_hash}, 
                 {passenger_sat.load_date}, 
                 {passenger_sat.record_source},
                 {passenger_sat.registration_time},
                 {passenger_sat.is_ramp},
-                {passenger_sat.gate});
+                {passenger_sat.gate},
+                {passenger_sat.flight_number});
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {PassengerFlightsSatRepositoty.name} (
                 flight_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
                 registration_time timestamp WITH TIME ZONE,
                 is_ramp BOOLEAN,
-                gate varchar(3));
+                gate varchar(3),
+                flight_number varchar(6));
             """
 
 
-class AirportsSatRepositoty:
+class AirportsSatRepositoty(AbstractCassandraRepository):
 
-    __name = "airports_sat"
+    name = "airports_sat"
 
     def insert(self, airport_sat: AirportsSat) -> str:
-        return f"""INSERT INTO {self.__name} (airport_hash_key, load_date, record_source,name,city,timezone)
+        return f"""INSERT INTO {AirportsSatRepositoty.name} (airport_hash_key, load_date, record_source,name,city,timezone)
                 VALUES ({airport_sat.airport_hash}, 
                 {airport_sat.load_date}, 
                 {airport_sat.record_source},
@@ -501,7 +515,7 @@ class AirportsSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AirportsSatRepositoty.name} (
                 airport_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -511,12 +525,12 @@ class AirportsSatRepositoty:
             """
 
 
-class AircraftsSatRepositoty:
+class AircraftsSatRepositoty(AbstractCassandraRepository):
 
-    __name = "aircrafts_sat"
+    name = "aircrafts_sat"
 
     def insert(self, aircraft_sat: AircraftsSat) -> str:
-        return f"""INSERT INTO {self.__name} (aircraft_hash_key, load_date, record_source,name,seats_num)
+        return f"""INSERT INTO {AircraftsSatRepositoty.name} (aircraft_hash_key, load_date, record_source,name,seats_num)
                 VALUES ({aircraft_sat.aircraft_hash}, 
                 {aircraft_sat.load_date}, 
                 {aircraft_sat.record_source},
@@ -525,7 +539,7 @@ class AircraftsSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AircraftsSatRepositoty.name} (
                 aircraft_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -534,12 +548,12 @@ class AircraftsSatRepositoty:
             """
 
 
-class AircraftNumsSatRepositoty:
+class AircraftNumsSatRepositoty(AbstractCassandraRepository):
 
-    __name = "aircraft_nums_sat"
+    name = "aircraft_nums_sat"
 
     def insert(self, aircraft_num_sat: AircraftNumsSat) -> str:
-        return f"""INSERT INTO {self.__name} (aircraft_hash_key, load_date, record_source,registration_time,deregistration_time)
+        return f"""INSERT INTO {AircraftNumsSatRepositoty.name} (aircraft_hash_key, load_date, record_source,registration_time,deregistration_time)
                 VALUES ({aircraft_num_sat.aircraft_num_hash}, 
                 {aircraft_num_sat.load_date}, 
                 {aircraft_num_sat.record_source},
@@ -548,7 +562,7 @@ class AircraftNumsSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {AircraftNumsSatRepositoty.name} (
                 aircraft_num_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -557,12 +571,12 @@ class AircraftNumsSatRepositoty:
             """
 
 
-class TicketsSatRepositoty:
+class TicketsSatRepositoty(AbstractCassandraRepository):
 
-    __name = "tickets_sat"
+    name = "tickets_sat"
 
     def insert(self, ticket_sat: TicketsSat) -> str:
-        return f"""INSERT INTO {self.__name} (ticket_hash_key, load_date, record_source,cost,baggage_weight,is_registred,seat_num)
+        return f"""INSERT INTO {TicketsSatRepositoty.name} (ticket_hash_key, load_date, record_source,cost,baggage_weight,is_registred,seat_num)
                 VALUES ({ticket_sat.ticket_hash}, 
                 {ticket_sat.load_date}, 
                 {ticket_sat.record_source},
@@ -573,7 +587,7 @@ class TicketsSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {TicketsSatRepositoty.name} (
                 ticket_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),
@@ -584,12 +598,12 @@ class TicketsSatRepositoty:
             """
 
 
-class PassengersSatRepositoty:
+class PassengersSatRepositoty(AbstractCassandraRepository):
 
-    __name = "passengers_sat"
+    name = "passengers_sat"
 
     def insert(self, passenger_sat: PassengersSat) -> str:
-        return f"""INSERT INTO {self.__name} (passenger_hash_key, load_date, record_source,name,surname)
+        return f"""INSERT INTO {PassengersSatRepositoty.name} (passenger_hash_key, load_date, record_source,name,surname)
                 VALUES ({passenger_sat.passenger_hash}, 
                 {passenger_sat.load_date}, 
                 {passenger_sat.record_source},
@@ -598,7 +612,7 @@ class PassengersSatRepositoty:
                 """
 
     def create_table(self) -> str:
-        return f""" CREATE TABLE IF NOT EXISTS {self.__name} (
+        return f""" CREATE TABLE IF NOT EXISTS {PassengersSatRepositoty.name} (
                 passenger_hash_key varchar(32),
                 load_date timestamp WITH TIME ZONE,
                 record_source varchar(150),

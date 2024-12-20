@@ -122,7 +122,7 @@ class TicketsHub:
         self.__load_date = row["load_date"]
         self.__record_source = row["record_source"]
         self.__ticket_hash = row["record_source"]
-        self.__number = row["number"]
+        self.__number = str(row["number"])
 
     @property
     def load_date(self) -> str:
@@ -146,8 +146,13 @@ class PassengersHub:
         self.__load_date = row["load_date"]
         self.__record_source = row["record_source"]
         self.__passenger_hash = row["passengers_hash_key"]
-        self.__passport_number = row["number"]
-        self.__passport_series = row["series"]
+        self.__passport_number = "0" * (6 - len(str(row["number"]))) + str(
+            row["number"]
+        )
+
+        self.__passport_series = "0" * (4 - len(str(row["series"]))) + str(
+            row["series"]
+        )
 
     @property
     def load_date(self) -> str:
@@ -406,7 +411,7 @@ class SeatClassesLink:
         return self.__seat_class_hash
 
 
-class PassengerLink:
+class PassengersLink:
     def __init__(self, row: pd.Series):
         self.__load_date = row["load_date"]
         self.__record_source = row["record_source"]
@@ -721,6 +726,35 @@ class PassengersSat:
         return self.__surname
 
 
+TABLES_CLASS = {
+    "aircrafts_hub": AircraftsHub,
+    "aircrafts_sat": AircraftsSat,
+    "aircrafts_link": AircraftsLink,
+    "airlines_hub": AirlinesHub,
+    "aircraft_nums_link": AircraftNumsLink,
+    "aircraft_nums_sat": AircraftNumsSat,
+    "tickets_sat": TicketsSat,
+    "tickets_hub": TicketsHub,
+    "tickets_link": TicketsLink,
+    "seat_classes_hub": SeatClassesHub,
+    "seat_classes_link": SeatClassesLink,
+    "passengers_link": PassengersLink,
+    "passengers_sat": PassengersSat,
+    "passengers_hub": PassengersHub,
+    "airports_sat": AirportsSat,
+    "airports_hub": AirportsHub,
+    "airports_link": AirportsLink,
+    "flights_hub": FlightsHub,
+    "passenger_flights_sat": PassengerFlightsSat,
+    "schedules_sat": SchedulesSat,
+    "schedules_hub": SchedulesHub,
+    "schedules_link": SchedulesLink,
+    "status_info_hub": StatusHub,
+    "status_infos_sat": StatusInfosSat,
+    "status_info_link": StatusesInfosLink,
+}
+
+
 class SchemaManager:
 
     def __init__(self, csv_path: Path, table_name: str):
@@ -731,7 +765,7 @@ class SchemaManager:
 
         df = pd.read_csv(self.__path)
         res = []
-        for index, row in df.iterrows():
-            pass
+        for _, row in df.iterrows():
+            res.append(TABLES_CLASS[self.__table](row))
 
         return res

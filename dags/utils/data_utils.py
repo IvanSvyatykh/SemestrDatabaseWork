@@ -1,20 +1,23 @@
 import abc
+import logging
 import datetime
 from minio import Minio
-
-
 from pathlib import Path
-import pandas as pd
 import pymongo
 from typing import Dict, List
 from pyspark.sql.types import StructType
 from pyspark.sql import SparkSession, DataFrame
-from dags.utils.database.db_core import (
+from utils.database.db_core import (
     CassandraConfig,
     CassandraUnitOfWork,
 )
-from dags.utils.database.repositories import AbstractCassandraRepository
+from utils.database.dwh_tables_schemas import SchemaManager
+from utils.database.repositories import AbstractCassandraRepository
 from utils.spark_df_schemas import COLLECTIONS_SCHEMAS
+
+
+logger = logging.getLogger(name="DWH INSERT")
+logging.basicConfig(level=logging.INFO)
 
 
 class PySparkDataExtractor(abc.ABC):
@@ -181,22 +184,34 @@ class DataWorker:
         return paths
 
     def __insert_table(
+        self,
         path: Path,
+        table_name: str,
         cassndra_uow: CassandraUnitOfWork,
         rep: AbstractCassandraRepository,
     ) -> None:
 
-        df = pd.read_csv(path)
+        schema_manager = SchemaManager(path, table_name)
+        list = schema_manager.get_schemas_list()
+        with cassndra_uow.begin_transaction([]) as transaction:
+            transaction.add_query(rep.create_table())
+        for el in list:
+            query, data = rep.insert(el)
+            try:
+                with cassndra_uow.begin_transaction(data) as transaction:
+                    transaction.add_query(query)
+            except Exception as e:
+                logger.info(e)
 
     def __add_all_tables_type(
-        tables: Dict[str, Path], cassndra_uow: CassandraUnitOfWork
+        self, tables: Dict[str, Path], cassndra_uow: CassandraUnitOfWork
     ) -> None:
-        for k, v in tables:
+        for k, v in tables.items():
             for rep in AbstractCassandraRepository.__subclasses__():
                 temp = rep()
                 if k == temp.name:
-                    temp.create_table()
-                    temp.insert()
+                    self.__insert_table(v, k, cassndra_uow, temp)
+                    break
 
     def add_data_to_cassandra(
         self, files: Dict[str, Path], cassandra_ip: str
@@ -205,8 +220,13 @@ class DataWorker:
         cassandra_config = CassandraConfig(
             "dwh", [cassandra_ip, "172.21.0.6"]
         )
-        cassadra_uow = CassandraUnitOfWork(cassandra_config.connect())
+
+        cassadra_uow = CassandraUnitOfWork(
+            cassandra_config.connect("cassandra", "cassandra")
+        )
         cassandra_config.create_keyspace()
+        cassandra_config.set_keyspace()
+
         hubs: Dict[str, Path] = {}
         sats: Dict[str, Path] = {}
         links: Dict[str, Path] = {}
@@ -218,3 +238,6 @@ class DataWorker:
                 sats[k] = path
             if "link" in k:
                 links[k] = path
+        self.__add_all_tables_type(hubs, cassadra_uow)
+        self.__add_all_tables_type(links, cassadra_uow)
+        self.__add_all_tables_type(sats, cassadra_uow)

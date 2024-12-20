@@ -553,7 +553,7 @@ class FlightsTransformer(AbstractCsvTableTransformer):
         ].toPandas().to_csv(flights_sat_path, index=False)
         return {
             "flights_hub": flights_hub_path,
-            "lights_sat": flights_sat_path,
+            "passenger_flights_sat": flights_sat_path,
         }
 
 
@@ -595,8 +595,8 @@ class SchedulesTransformer(AbstractCsvTableTransformer):
             schedules_df,
             on=[schedules_df._id == flights_df.schedule_id],
             how="inner",
-        )[TABLES_COLUMNS["schedules_sat"]].toPandas().to_csv(
-            schedules_sat_path, index=False
+        )[TABLES_COLUMNS["schedules_link"]].toPandas().to_csv(
+            schedules_link_path, index=False
         )
 
         return {

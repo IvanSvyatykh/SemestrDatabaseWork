@@ -1,5 +1,7 @@
 from contextlib import contextmanager
-from cassandra.cluster import Cluster
+from typing import List
+from cassandra.cluster import Cluster, Session
+from cassandra.auth import PlainTextAuthProvider
 
 
 class CassandraConfig:
@@ -8,12 +10,19 @@ class CassandraConfig:
         self.keyspace = keyspace
         self.session = None
 
-    def connect(self):
-        cluster = Cluster(contact_points=self.contact_points)
-        session = cluster.connect()
-        session.set_keyspace(self.keyspace)
+    def connect(self, username: str, password: str):
+        auth_provider = PlainTextAuthProvider(
+            username=username, password=password
+        )
+        cluster = Cluster(
+            contact_points=self.contact_points, auth_provider=auth_provider
+        )
+        session: Session = cluster.connect()
         self.session = session
         return session
+
+    def set_keyspace(self) -> None:
+        self.session.set_keyspace(self.keyspace)
 
     def create_keyspace(self) -> None:
         create_keyspace_query = f"""
@@ -40,17 +49,17 @@ class CassandraConfig:
 
 
 class CassandraUnitOfWork:
-    def __init__(self, session):
+    def __init__(self, session: Session):
         self._session = session
         self._queries = []
 
     @contextmanager
-    def begin_transaction(self):
+    def begin_transaction(self, data: List):
         """Контекстный менеджер для выполнения группы запросов в рамках одной транзакции."""
         try:
             yield self
             for query in self._queries:
-                self._session.execute(query)
+                self._session.execute(query, data)
         finally:
             self._queries.clear()
 

@@ -485,7 +485,7 @@ class PassengersLinkRepositoty(AbstractCassandraRepository):
 
 class StatusInfosSatRepositoty(AbstractCassandraRepository):
 
-    name = "status_infos_sat"
+    name = "status_info_sat"
 
     def insert(self, status_info_sat: StatusInfosSat) -> Tuple[str, List]:
         return (

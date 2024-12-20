@@ -750,7 +750,7 @@ TABLES_CLASS = {
     "schedules_hub": SchedulesHub,
     "schedules_link": SchedulesLink,
     "status_info_hub": StatusHub,
-    "status_infos_sat": StatusInfosSat,
+    "status_info_sat": StatusInfosSat,
     "status_info_link": StatusesInfosLink,
 }
 

@@ -202,10 +202,10 @@ TABLES_COLUMNS = {
 
 
 def get_path_columns_dict(
-    paths_to_files: List[Path],
+    paths_to_files: List[str],
 ) -> Dict[Path, List[str]]:
     result = {}
-
+    paths_to_files: List[Path] = [Path(item) for item in paths_to_files]
     for path in paths_to_files:
 
         file_name = path.stem.split(".")[0]

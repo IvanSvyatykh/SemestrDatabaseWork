@@ -39,7 +39,7 @@ default_args = {
     schedule="@daily",
     catchup=False,
 )
-def extract_dag():
+def dag():
 
     spark_session_name = "ETL_extract"
     temp_dir_path = Path("./data")
@@ -50,7 +50,7 @@ def extract_dag():
     @task()
     def get_data_from_minio(
         data_worker: DataWorker, bucket_name: str, prefix: str
-    ) -> List[Path]:
+    ) -> List[str]:
         return data_worker.get_data_from_minio(prefix, bucket_name)
 
     @task()
@@ -95,7 +95,7 @@ def extract_dag():
     ) -> Dict[str, Path]:
         return transformer.transform_data(spark_dir)
 
-    @task
+    @task()
     def load_data_to_cassandra(
         data_worker: DataWorker, files: Dict[str, Path], cassandra_ip: str
     ) -> None:
@@ -115,6 +115,7 @@ def extract_dag():
         secure=False,
     )
     temp_dir_path.mkdir(exist_ok=True)
+    load_temp_dir_path.mkdir(exist_ok=True)
     data_worker = DataWorker(
         temp_dir_path=temp_dir_path,
         spark_worker=extractor,
@@ -130,17 +131,18 @@ def extract_dag():
         paths_to_data=paths_to_data,
         bucket_name=bucket_name,
     )
-    paths_to__files = get_data_from_minio(
+    paths_to_files = get_data_from_minio(
         data_worker=data_worker,
         bucket_name=bucket_name,
         prefix=str(datetime.date.today()),
     )
+    print(paths_to_files)
     transformer = PySparkDataTransformer(
         spark_session_name=spark_session_name, spark_ip=spark_ip
     )
     add_data_to_minio = add_meta_data_to_csvgz(
         transformer,
-        get_path_columns_dict(paths_to__files),
+        get_path_columns_dict(paths_to_files),
         etl_start_time=datetime.datetime.now(),
         record_source=extractor.mongodb_uri,
     )
@@ -153,11 +155,11 @@ def extract_dag():
     (
         paths_to_data
         >> load_to_minio
-        >> paths_to__files
+        >> paths_to_files
         >> add_data_to_minio
         >> files
         >> add_data_to_cassandra
     )
 
 
-dag = extract_dag()
+dag = dag()

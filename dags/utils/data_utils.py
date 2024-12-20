@@ -157,7 +157,7 @@ class DataWorker:
 
     def get_data_from_minio(
         self, prefix: str, bucket_name: str
-    ) -> List[Path]:
+    ) -> List[str]:
 
         if not self.minio_client.bucket_exists(bucket_name):
             raise ValueError(
@@ -172,8 +172,10 @@ class DataWorker:
 
         for minio_file in minio_files:
             paths.append(
-                self.__temp_dir_path
-                / minio_file.object_name.split("/")[-1]
+                str(
+                    self.__temp_dir_path
+                    / minio_file.object_name.split("/")[-1]
+                )
             )
             self.minio_client.fget_object(
                 bucket_name=bucket_name,

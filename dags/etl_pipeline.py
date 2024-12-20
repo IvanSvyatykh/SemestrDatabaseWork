@@ -21,6 +21,7 @@ from config import (
     MINIO_ACCESS_KEY,
     MINIO_SECRET_KEY,
     MINIO_ENDPOINT,
+    CASSANDRA_DOMEN,
 )
 from utils.data_utils import DataWorker, MongoDbExtractractor
 
@@ -146,8 +147,7 @@ def extract_dag():
 
     files = split_files_on_tables(transformer, load_temp_dir_path)
     add_data_to_cassandra = load_data_to_cassandra(
-        data_worker=data_worker,
-        files=files,
+        data_worker=data_worker, files=files, cassandra_ip=CASSANDRA_DOMEN
     )
     [item.unlink() for item in load_temp_dir_path.iterdir()]
     (

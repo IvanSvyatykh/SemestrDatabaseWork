@@ -30,8 +30,8 @@ services:
     env_file:
       - .env
     ports:
-      - "8090:8080"
-      - "7077:7077"
+      - "${SPARK_UI_PORT}:8080"
+      - "${SPARK_MASTER_PORT}:7077"
     networks:
       - spark-network
     depends_on:
@@ -84,7 +84,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8083:${AIRFLOW_PORT}"
+      - "${AIRFLOW_PORT}:8083"
     volumes:
       - ./dags:/opt/airflow/dags
     networks:
@@ -127,13 +127,10 @@ services:
   cassandra:
     image: docker.io/bitnami/cassandra:5.0
     ports:
-      - '7000:7000'
-      - '9042:9042'
-    environment:
-      - CASSANDRA_USER=cassandra
-      - CASSANDRA_SEEDS=cassandra
-      - CASSANDRA_PASSWORD_SEEDER=yes
-      - CASSANDRA_PASSWORD=cassandra
+      - '${CASSANDRA_PORT}:7000'
+      - '${CASSNDRA_SECOND_PORT}:9042'
+    env_file:
+      - .env
     networks:
       - spark-network
 

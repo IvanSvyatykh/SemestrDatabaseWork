@@ -32,8 +32,7 @@ default_args = {
 
 
 @dag(
-    dag_id="Extract_data_from_MongoDB",
-    description="Dag_for_extracting_data_from_MongoDB_and_load_to_MINIO",
+    dag_id="Load_data_to_DWH",
     default_args=default_args,
     start_date=datetime.datetime.today(),
     schedule="@daily",
@@ -41,8 +40,7 @@ default_args = {
 )
 def dag():
 
-    spark_session_name = "ETL_extract"
-    temp_dir_path = Path("./data")
+    spark_session_name = "ETL_load"
     load_temp_dir_path = Path("./data/spark_temp")
     bucket_name = "test"
     spark_ip = "spark-master"
@@ -51,7 +49,8 @@ def dag():
     def get_data_from_minio(
         data_worker: DataWorker, bucket_name: str, prefix: str
     ) -> List[str]:
-        return data_worker.get_data_from_minio(prefix, bucket_name)
+        temp = data_worker.get_data_from_minio(prefix, bucket_name)
+        return temp
 
     @task()
     def add_meta_data_to_csvgz(
@@ -69,25 +68,6 @@ def dag():
             transformer.add_md5_hash_column(k, v)
             transformer.add_timestamp_column(k, etl_start_time)
             transformer.add_record_source(k, record_source)
-
-    @task()
-    def get_data_from_mongo(
-        data_worker: DataWorker, spark_session_name: str, spark_ip
-    ) -> List[str]:
-        data_worker.start_extractor(
-            spark_session_name=spark_session_name, spark_ip=spark_ip
-        )
-        return data_worker.get_data_from_db()
-
-    @task()
-    def load_data_to_minio(
-        data_worker: DataWorker,
-        paths_to_data: List[str],
-        bucket_name: str,
-    ):
-        data_worker.add_data_to_minio(
-            paths_to_data=paths_to_data, bucket_name=bucket_name
-        )
 
     @task()
     def split_files_on_tables(
@@ -114,35 +94,24 @@ def dag():
         secret_key=MINIO_SECRET_KEY,
         secure=False,
     )
-    temp_dir_path.mkdir(exist_ok=True)
     load_temp_dir_path.mkdir(exist_ok=True)
     data_worker = DataWorker(
-        temp_dir_path=temp_dir_path,
+        temp_dir_path=load_temp_dir_path,
         spark_worker=extractor,
         minio_client=minio_client,
-    )
-    paths_to_data = get_data_from_mongo(
-        data_worker=data_worker,
-        spark_session_name=spark_session_name,
-        spark_ip=spark_ip,
-    )
-    load_to_minio = load_data_to_minio(
-        data_worker=data_worker,
-        paths_to_data=paths_to_data,
-        bucket_name=bucket_name,
     )
     paths_to_files = get_data_from_minio(
         data_worker=data_worker,
         bucket_name=bucket_name,
         prefix=str(datetime.date.today()),
     )
-    print(paths_to_files)
     transformer = PySparkDataTransformer(
         spark_session_name=spark_session_name, spark_ip=spark_ip
     )
-    add_data_to_minio = add_meta_data_to_csvgz(
+    columns_dict_path = get_path_columns_dict(paths_to_files)
+    add_meta_data = add_meta_data_to_csvgz(
         transformer,
-        get_path_columns_dict(paths_to_files),
+        columns_dict_path=columns_dict_path,
         etl_start_time=datetime.datetime.now(),
         record_source=extractor.mongodb_uri,
     )
@@ -152,14 +121,8 @@ def dag():
         data_worker=data_worker, files=files, cassandra_ip=CASSANDRA_DOMEN
     )
     [item.unlink() for item in load_temp_dir_path.iterdir()]
-    (
-        paths_to_data
-        >> load_to_minio
-        >> paths_to_files
-        >> add_data_to_minio
-        >> files
-        >> add_data_to_cassandra
-    )
+
+    (paths_to_files >> add_meta_data >> files >> add_data_to_cassandra)
 
 
 dag = dag()
